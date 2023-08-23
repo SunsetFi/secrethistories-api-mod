@@ -1,0 +1,114 @@
+###
+# Pause
+POST http://localhost:8081/api/time/speed
+Content-Type: application/json
+
+{
+  "speed": "Paused"
+}
+
+###
+# Check Legacy
+GET http://localhost:8081/api/game-state/legacy
+
+###
+# Get spheres
+GET http://localhost:8081/api/by-path/~/spheres
+
+###
+# Get fixed verbs
+GET http://localhost:8081/api/by-path/~/fixedverbs/tokens
+
+###
+# Conclude setup 11
+POST http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/conclude
+
+###
+# Inspect portage 1
+GET http://localhost:8081/api/by-path/~/portage1/tokens
+
+###
+# Inspect setup_11 spheres
+GET http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/spheres
+
+###
+# Inspect memories
+GET http://localhost:8081/api/by-path/~/hand.memories/tokens
+
+###
+# Move journal into setup_11
+PATCH http://localhost:8081/api/by-path/~/portage1/!journal.generic.start_40
+Content-Type: application/json
+
+{
+  "spherePath": "~/fixedverbs!consider.setup_11/c"
+}
+
+###
+# Move storm into setup_11 memory
+PATCH http://localhost:8081/api/by-path/~/hand.memories/!mem.storm_41
+Content-Type: application/json
+
+{
+  "spherePath": "~/fixedverbs!consider.setup_11/memory"
+}
+
+###
+# Execute setup_11
+POST http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/execute
+
+###
+# Check next event
+GET http://localhost:8081/api/time/events
+
+###
+# Skip to next event
+POST http://localhost:8081/api/time/events/beat
+Content-Type: application/json
+
+{
+  "event": "Either"
+}
+
+###
+# Conclude setup 11
+POST http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/conclude
+
+###
+# Get abilities
+GET http://localhost:8081/api/by-path/~/hand.abilities/tokens
+
+###
+# Move journal into setup_11
+PATCH http://localhost:8081/api/by-path/~/portage1/!journal.generic.start_40
+Content-Type: application/json
+
+{
+  "spherePath": "~/fixedverbs!consider.setup_11/c"
+}
+
+###
+# Move fet into setup_11
+PATCH http://localhost:8081/api/by-path/~/hand.abilities/!zfet_50
+Content-Type: application/json
+
+{
+  "spherePath": "~/fixedverbs!consider.setup_11/memory"
+}
+
+###
+# Execute setup_11
+POST http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/execute
+
+###
+# Skip to next event
+POST http://localhost:8081/api/time/events/beat
+Content-Type: application/json
+
+{
+  "event": "Either"
+}
+
+###
+# Conclude setup 11
+POST http://localhost:8081/api/by-path/~/fixedverbs/!consider.setup_11/conclude

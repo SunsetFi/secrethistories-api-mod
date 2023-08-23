@@ -1,0 +1,141 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Target Name="CheckEnvironmentVars">
+    <Error Text="Please set the BOHDir environment variable." Condition="'$(BOHDir)' == ''" ContinueOnError="false" />
+    <Error Text="Please set the GAME environment variable." Condition="'$(GAME)' == ''" ContinueOnError="false" />
+  </Target>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <BHDataDir>$([System.IO.Path]::Combine($(BOHDir), 'bh_Data'))</BHDataDir>
+    <BHModDir>$([System.IO.Path]::Combine($(USERPROFILE), 'AppData\LocalLow\Weather Factory\Book of Hours\mods'))</BHModDir>
+    <CSDataDir>$([System.IO.Path]::Combine($(CSDir), 'cultistsimulator_Data'))</CSDataDir>
+    <CSModDir>$([System.IO.Path]::Combine($(USERPROFILE), 'AppData\LocalLow\Weather Factory\Cultist Simulator\mods'))</CSModDir>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <BHDataDir>$([System.IO.Path]::Combine($(BOHDir), 'OSX.app\Contents\Resources\Data'))</BHDataDir>
+    <BHModDir>$([System.IO.Path]::Combine($(HOME), 'Library\Application Support\Weather Factory\Book of Hours\mods'))</BHModDir>
+    <CSDataDir>$([System.IO.Path]::Combine($(CSDir), 'OSX.app\Contents\Resources\Data'))</CSDataDir>
+    <CSModDir>$([System.IO.Path]::Combine($(HOME), 'Library\Application Support\Weather Factory\Cultist Simulator\mods'))</CSModDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GAME)' == 'CS'">
+    <DataDir>$(CSDataDir)</DataDir>
+    <ModDir>$(CSModDir)</ModDir>
+    <DefineConstants>$(DefineConstants);CS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GAME)' == 'BH'">
+    <DataDir>$(BHDataDir)</DataDir>
+    <ModDir>$(BHModDir)</ModDir>
+    <DefineConstants>$(DefineConstants);BH</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CodeAnalysisRuleSet>./StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>./StyleCop.ruleset</CodeAnalysisRuleSet>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SHRestAPI</RootNamespace>
+    <AssemblyName>SHRest</AssemblyName>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <FileAlignment>512</FileAlignment>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</OutDir>
+    <PublishDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</PublishDir>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</OutDir>
+    <PublishDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</PublishDir>
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\Assembly-CSharp.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SecretHistories.Constants">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\SecretHistories.Constants.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SecretHistories.Enums">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\SecretHistories.Enums.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SecretHistories.Interfaces">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\SecretHistories.Interfaces.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SecretHistories.Main">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\SecretHistories.Main.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.CoreModule.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.UI.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.UIModule.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\Unity.InputSystem.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.IMGUIModule.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.TextRenderingModule.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\UnityEngine.ImageConversionModule.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$([System.IO.Path]::Combine($(DataDir), 'Managed\Newtonsoft.Json.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
+    <PackageReference Include="Ceen.Httpd" Version="0.9.10" />
+  </ItemGroup>
+</Project>
