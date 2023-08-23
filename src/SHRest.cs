@@ -32,8 +32,6 @@ public class SHRest : MonoBehaviour
     /// </summary>
     public static void Initialise()
     {
-        Logging.LogInfo("Intitializing SHRestAPI");
-
         try
         {
             new GameObject().AddComponent<SHRest>();
@@ -50,19 +48,14 @@ public class SHRest : MonoBehaviour
     /// </summary>
     public void Start()
     {
-        Logging.LogInfo("Starting SHRestAPI");
-
         try
         {
             Dispatcher.Initialize();
-            Logging.LogInfo("Dispatcher Initialized");
 
             var ownAssembly = typeof(SHRest).Assembly;
             JsonTranslator.LoadJsonTranslatorStrategies(ownAssembly);
-            Logging.LogInfo("JSON translation strategies loaded.");
 
             this.RegisterControllers(ownAssembly);
-            Logging.LogInfo("Controllers registered.");
         }
         catch (Exception ex)
         {
