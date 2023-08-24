@@ -94,13 +94,7 @@ namespace SHRestAPI.Controllers
                     },
                     sphere => throw new BadRequestException("Cannot get icon for sphere."));
 
-                var rect = sprite.rect;
-                var spriteTexture = sprite.texture.ToReadable();
-                var newTexture = new Texture2D((int)rect.width, (int)rect.height);
-                newTexture.SetPixels(spriteTexture.GetPixels((int)rect.xMin, (int)rect.yMin, (int)rect.width, (int)rect.height));
-                newTexture.Apply();
-
-                return newTexture.EncodeToPNG();
+                return sprite.ToTexture().EncodeToPNG();
             });
 
             context.Response.Headers.Add("Content-Type", "image/png");
