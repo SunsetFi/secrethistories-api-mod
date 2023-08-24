@@ -289,6 +289,86 @@ Information about registered entities in the compendium are made available throu
   - **200 OK**: PNG content representing the element's icon.
   - **404 Not Found**: No element exists by that id.
 
+## Sphere JSON Format
+
+Spheres contain the following properties
+
+#### `id`
+
+- **Type**: `string`
+- **Description**: Gets the id of the sphere.
+- **Example**: `"tabletop"`
+- **Read-only**
+
+#### `path`
+
+- **Type**: `string`
+- **Description**: Gets the path for the sphere.
+- **Example**: `"~/tabletop"`
+- **Read-only**
+
+#### `category`
+
+- **Type**: `string`
+- **Description**: Gets the category of the sphere.
+- **Example**: `"Threshhold"`
+- **Read-only**
+
+#### `shrouded`
+
+- **Type**: `bool`
+- **Description**: Gets a value indicating if the sphere is shrouded.
+- **Example**: `false`
+- **Read-only**
+
+#### `label`
+
+- **Type**: `string`
+- **Description**: Gets the label of the sphere, if one is set. Otherwise, this will be null.
+- **Example**: `"Funds"`
+- **Read-only**
+
+#### `description`
+
+- **Type**: `string`
+- **Description**: Gets the description of the sphere.
+- **Read-only**
+
+#### `consumes`
+
+- **Type**: `bool`
+- **Description**: Gets a value indicating if the sphere will consume its card.
+- **Example**: `false`
+- **Read-only**
+
+#### `greedy`
+
+- **Type**: `bool`
+- **Description**: Gets a value indicating if the sphere is greedy.
+- **Example**: `false`
+- **Read-only**
+
+#### `essentialAspects`
+
+- **Type**: `JObject`
+- **Description**: Gets the attributes that all must be present on a token to be inserted into this sphere.
+- **Example**: `{"lore": 1}`
+- **Read-only**
+
+#### `requiredAspects`
+
+- **Type**: `JObject`
+- **Description**: Gets the attributes of which at least one must be present on a token to be inserted into this sphere.
+- **Example**: `{"lore": 1}`
+- **Read-only**
+
+#### `forbiddenAspects`
+
+- **Type**: `JObject`
+- **Description**: Gets the attributes of which none must be present on a token to be inserted into this sphere.
+- **Example**: `{"lore": 1}`
+- **Read-only**
+
 ## Token JSON Format
 
 Tokens contain the following properties
