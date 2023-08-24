@@ -198,11 +198,11 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
-        /// Gets the lifetime of the element.
+        /// Gets the element's manifestation type.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The element lifetime.</returns>
-        [JsonPropertyGetter("lifetimeTicks")]
+        [JsonPropertyGetter("manifestationType")]
         public string GetManifestationType(Element element)
         {
             return element.ManifestationType;

@@ -681,10 +681,10 @@ In addition to handling Token JSON properties, situation tokens can handle the f
 - **Example**: `15.5`
 - **Read-only**
 
-#### `lifetimeTicks`
+#### `manifestationType`
 
 - **Type**: `string`
-- **Description**: Gets the lifetime of the element.
+- **Description**: Gets the element's manifestation type.
 - **Example**: `"manifestation_type"`
 - **Read-only**
 
