@@ -54,15 +54,7 @@ namespace SHRestAPI
         /// <param name="token">The token to update.</param>
         public static void UpdateToken(JObject body, Token token)
         {
-            JsonTranslator.UpdateObjectFromJson(body, token, false);
-            if (JsonTranslator.HasStrategyFor(token.Payload))
-            {
-                JsonTranslator.UpdateObjectFromJson(body, token.Payload, false);
-            }
-            else
-            {
-                Logging.LogTrace("No strategy for token payload type {0}", token.Payload.GetType().FullName);
-            }
+            JsonTranslator.UpdateObjectFromJson(body, token.Payload, false);
         }
 
         /// <summary>
@@ -74,16 +66,7 @@ namespace SHRestAPI
         {
             var json = new JObject();
 
-            JsonTranslator.ObjectToJson(token, json);
-
-            if (JsonTranslator.HasStrategyFor(token.Payload))
-            {
-                JsonTranslator.ObjectToJson(token.Payload, json);
-            }
-            else
-            {
-                Logging.LogTrace("No strategy for token payload type {0}", token.Payload.GetType().FullName);
-            }
+            JsonTranslator.ObjectToJson(token.Payload, json);
 
             return json;
         }
