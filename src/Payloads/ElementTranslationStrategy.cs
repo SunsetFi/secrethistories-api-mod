@@ -40,11 +40,11 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
-        /// Gets the burn time of the element.
+        /// Gets what the element burns to.
         /// </summary>
         /// <param name="element">The element.</param>
-        /// <returns>The burn time of the element.</returns>
-        [JsonPropertyGetter("burnTime")]
+        /// <returns>The element that this element burns to.</returns>
+        [JsonPropertyGetter("burnTo")]
         public string GetBurnTo(Element element)
         {
             return element.BurnTo;
@@ -129,11 +129,7 @@ namespace SHRestAPI.Payloads
             return element.Icon;
         }
 
-        // Should give the full induction data, or nothing.
-        // public string[] GetInduces(Element element)
-        // {
-        //     return element.Induces.Select(x => x.).ToArray()
-        // }
+        // TODO: Inductions.
 
         /// <summary>
         /// Gets what the element inherits from.

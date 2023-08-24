@@ -261,6 +261,34 @@ If you instead want to force a situation to run a recipe without going through t
   ```
 - **Response**: `200 OK`
 
+## Compendium
+
+Information about registered entities in the compendium are made available through the compendium endpoint
+
+### GET /compendium/elements
+
+- **Description**: Gets all elements, with an optional filter.
+- **Query Parameters**
+  - **isAspect** If specified, filters elements by whether they are an aspect or not. Can be `true` or `false`
+  - **isHidden** If specified, filters elements by whether they are hidden or not. Can be `true` or `false`
+- **Response**
+  - **200 OK**: An array of elements matching the filters.
+
+### GET /compendium/elements/:elementId
+
+- **Description**: Gets a specific element by id.
+- **Response**
+
+  - **200 OK**: The matching element
+  - **404 Not Found**: No element exists by that id.
+
+  ### GET /compendium/elements/:elementId/icon.ppng
+
+- **Description**: Gets the element's icon.
+- **Response**
+  - **200 OK**: PNG content representing the element's icon.
+  - **404 Not Found**: No element exists by that id.
+
 ## Token JSON Format
 
 Tokens contain the following properties
@@ -328,14 +356,14 @@ In addition to handling Token JSON properties, ElementStack tokens can handle th
 
 #### `aspects`
 
-- **Type**: `JObject`
+- **Type**: `object`
 - **Description**: The aspects of the element stack.
 - **Example**: `{ "AspectA": 5, "AspectB": 10 }`
 - **Read-only**
 
 #### `mutations`
 
-- **Type**: `JObject`
+- **Type**: `object`
 - **Description**: The mutations of the element stack.
 - **Example**: `{ "lantern": 3, "winter": 4 }`
 - **Readable**
@@ -457,4 +485,181 @@ In addition to handling Token JSON properties, situation tokens can handle the f
 - **Type**: `string`
 - **Description**: A brief description of the situation.
 - **Example**: `"This situation describes a specific event or occurrence."`
+- **Read-only**
+
+### Elements
+
+#### `id`
+
+- **Type**: `string`
+- **Description**: Gets the ID of the element.
+- **Example**: `"element_1234"`
+- **Read-only**
+
+#### `aspects`
+
+- **Type**: `object`
+- **Description**: Gets the aspects of the element.
+- **Example**: `{"key": "value"}`
+- **Read-only**
+
+#### `burnTo`
+
+- **Type**: `string`
+- **Description**: Gets element that this element burns to.
+- **Example**: `"burn_value"`
+- **Read-only**
+
+#### `comments`
+
+- **Type**: `string`
+- **Description**: Gets the comments of the element.
+- **Example**: `"This is a comment."`
+- **Read-only**
+
+#### `commute`
+
+- **Type**: `string[]`
+- **Description**: Gets the commutes of the element.
+- **Example**: `["commute1", "commute2"]`
+- **Read-only**
+
+#### `decays`
+
+- **Type**: `bool`
+- **Description**: Gets whether the element decays.
+- **Example**: `true`
+- **Read-only**
+
+#### `decayTo`
+
+- **Type**: `string`
+- **Description**: Gets what the element decays to.
+- **Example**: `"decay_value"`
+- **Read-only**
+
+#### `description`
+
+- **Type**: `string`
+- **Description**: Gets the description of the element.
+- **Example**: `"This is a description."`
+- **Read-only**
+
+#### `drownTo` **(Book of Hours Only)**
+
+- **Type**: `string`
+- **Description**: Gets what the element drowns to.
+- **Example**: `"drown_value"`
+- **Read-only**
+
+#### `icon`
+
+- **Type**: `string`
+- **Description**: Gets the element icon name.
+- **Example**: `"icon_name"`
+- **Read-only**
+
+#### `inherits`
+
+- **Type**: `string`
+- **Description**: Gets what the element inherits from.
+- **Example**: `"inherit_value"`
+- **Read-only**
+
+#### `isAspect`
+
+- **Type**: `bool`
+- **Description**: Gets whether the element is an aspect.
+- **Example**: `true`
+- **Read-only**
+
+#### `isHidden`
+
+- **Type**: `bool`
+- **Description**: Gets whether the element is hidden.
+- **Example**: `false`
+- **Read-only**
+
+#### `label`
+
+- **Type**: `string`
+- **Description**: Gets the label of the element.
+- **Example**: `"label_name"`
+- **Read-only**
+
+#### `lever`
+
+- **Type**: `string`
+- **Description**: Gets the lever of the element.
+- **Example**: `"lever_value"`
+- **Read-only**
+
+#### `lifetime`
+
+- **Type**: `float`
+- **Description**: Gets the lifetime of the element.
+- **Example**: `15.5`
+- **Read-only**
+
+#### `lifetimeTicks`
+
+- **Type**: `string`
+- **Description**: Gets the lifetime of the element.
+- **Example**: `"manifestation_type"`
+- **Read-only**
+
+#### `metafictional`
+
+- **Type**: `bool`
+- **Description**: Gets whether the element is metafictional.
+- **Example**: `true`
+- **Read-only**
+
+#### `noArtNeeded`
+
+- **Type**: `bool`
+- **Description**: Gets whether no art is needed for this element.
+- **Example**: `false`
+- **Read-only**
+
+#### `resaturate`
+
+- **Type**: `bool`
+- **Description**: Gets whether the element resaturates as it decays.
+- **Example**: `true`
+- **Read-only**
+
+#### `sort`
+
+- **Type**: `string`
+- **Description**: Gets the sort of the element.
+- **Example**: `"sort_value"`
+- **Read-only**
+
+#### `unique`
+
+- **Type**: `bool`
+- **Description**: Gets whether this element should only exist once.
+- **Example**: `true`
+- **Read-only**
+
+#### `uniquenessGroup`
+
+- **Type**: `string`
+- **Description**: Gets the group in which only one element of this group should exist at a time.
+- **Example**: `"group_value"`
+- **Read-only**
+
+#### `verbIcon`
+
+- **Type**: `string`
+- **Description**: Gets the icon for the verb represented by this element.
+- **Example**: `"verb_icon_name"`
+- **Read-only**
+
+#### `xexts` **(Book of Hours Only)**
+
+- **Type**: `object`
+- **Description**: Gets the Xexts of the element.
+- **Example**: `{"key": "value"}`
 - **Read-only**
