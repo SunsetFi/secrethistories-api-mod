@@ -1,6 +1,8 @@
 namespace SHRestAPI
 {
+    using System.Collections.Generic;
     using Newtonsoft.Json.Linq;
+    using SecretHistories.Entities;
     using SecretHistories.Spheres;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
@@ -12,6 +14,40 @@ namespace SHRestAPI
     /// </summary>
     public static class TokenUtils
     {
+        /// <summary>
+        /// Enumerates all tokens in the game.
+        /// </summary>
+        /// <returns>An enumerable of all tokens in the game.</returns>
+        /// <remarks>
+        /// This includes non-user spheres like the dealer's table.  Use with care.
+        /// </remarks>
+        public static IEnumerable<Token> GetAllTokens()
+        {
+            IEnumerable<Token> GetTokensDeep(Sphere sphere)
+            {
+                foreach (var token in sphere.Tokens)
+                {
+                    yield return token;
+
+                    foreach (var childSphere in token.Payload.GetSpheres())
+                    {
+                        foreach (var childToken in GetTokensDeep(childSphere))
+                        {
+                            yield return childToken;
+                        }
+                    }
+                }
+            }
+
+            foreach (var sphere in FucineRoot.Get().GetSpheres())
+            {
+                foreach (var token in GetTokensDeep(sphere))
+                {
+                    yield return token;
+                }
+            }
+        }
+
         /// <summary>
         /// Create a token in a sphere from a payload.
         /// </summary>
