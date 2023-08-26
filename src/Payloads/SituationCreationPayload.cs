@@ -67,7 +67,7 @@ namespace SHRestAPI.Payloads
             if (!string.IsNullOrEmpty(this.RecipeId))
             {
                 var recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(this.RecipeId);
-                cmd.WithVerbId(recipe.ActionId).WithRecipeAboutToActivate(recipe.Id);
+                cmd.WithVerbId(string.IsNullOrEmpty(this.VerbId) ? recipe.ActionId : this.VerbId).WithRecipeAboutToActivate(recipe.Id);
             }
             else if (!string.IsNullOrEmpty(this.VerbId))
             {
