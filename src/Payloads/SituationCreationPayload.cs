@@ -39,14 +39,6 @@ namespace SHRestAPI.Payloads
                 {
                     throw new BadRequestException($"RecipeId {this.RecipeId} does not exist.");
                 }
-
-                if (!string.IsNullOrEmpty(this.VerbId))
-                {
-                    if (this.VerbId != recipe.ActionId)
-                    {
-                        throw new BadRequestException($"VerbId {this.VerbId} does not match recipe verb {recipe.ActionId} for recipe {this.RecipeId}");
-                    }
-                }
             }
             else
             {
