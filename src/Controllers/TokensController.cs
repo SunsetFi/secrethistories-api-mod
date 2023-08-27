@@ -29,7 +29,7 @@ namespace SHRestAPI.Controllers
             context.Request.QueryString.TryGetValue("elementId", out var elementId);
             string[] elementIds = string.IsNullOrEmpty(elementId) ? new string[0] : elementId.Split(",");
 
-            var result = Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.RunOnMainThread(() =>
             {
                 return (from token in TokenUtils.GetAllTokens()
                         where spheres.Length == 0 || spheres.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))

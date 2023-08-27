@@ -32,9 +32,12 @@ public class SHRest : MonoBehaviour
     /// </summary>
     public static void Initialise()
     {
+        Logging.LogInfo("SHRestAPI Initializing.");
         try
         {
-            new GameObject().AddComponent<SHRest>();
+            var go = new GameObject();
+            go.AddComponent<SHRest>();
+            DontDestroyOnLoad(go);
         }
         catch (Exception ex)
         {
@@ -46,8 +49,9 @@ public class SHRest : MonoBehaviour
     /// Unity callback for when the game object is created.
     /// This registers our controllers and starts the server.
     /// </summary>
-    public void Start()
+    public void Awake()
     {
+        Logging.LogInfo("SHRestAPI Initializing (Return Of Khan).");
         try
         {
             Dispatcher.Initialize();
@@ -106,6 +110,8 @@ public class SHRest : MonoBehaviour
 
     private async Task<bool> OnRequest(IHttpContext context)
     {
+        Logging.LogTrace($"Received request: {context.Request.Method} {context.Request.Path}");
+
         if (context.Request.Method == "OPTIONS")
         {
             // For a proper implementation of CORS, see https://github.com/expressjs/cors/blob/master/lib/index.js#L159

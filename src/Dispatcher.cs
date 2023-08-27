@@ -2,6 +2,7 @@ namespace SHRestAPI
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using UnityEngine;
 
@@ -60,17 +61,21 @@ namespace SHRestAPI
         /// </summary>
         public static void Initialize()
         {
+            // BH deletes game objects on load, so we dispatch from Bep instead.
+#if CS
             if (instance == null)
             {
+
                 instance = new GameObject("Dispatcher").AddComponent<Dispatcher>();
                 DontDestroyOnLoad(instance.gameObject);
             }
+#endif
         }
 
         /// <summary>
-        /// Unity callback for updating the dispatcher.
+        /// Executes all pending items in the dispatch.
         /// </summary>
-        public void Update()
+        public static void Drain()
         {
             if (queued)
             {
@@ -97,6 +102,16 @@ namespace SHRestAPI
 
                 actions.Clear();
             }
+        }
+
+        private void OnDestroy()
+        {
+            Logging.LogTrace($"Dispatcher destroyed by. {new StackTrace().ToString()}");
+        }
+
+        private void Update()
+        {
+            Drain();
         }
 
         private class QueuedTask

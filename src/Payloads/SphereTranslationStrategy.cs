@@ -77,6 +77,8 @@ namespace SHRestAPI.Payloads
             return sphere.GoverningSphereSpec?.Description;
         }
 
+#if CS
+// This was in BH, but seems to have been removed in a beta.
         /// <summary>
         /// Gets a value indicating if the sphere will consume its card.
         /// </summary>
@@ -87,6 +89,7 @@ namespace SHRestAPI.Payloads
         {
             return sphere.GoverningSphereSpec?.Consumes ?? false;
         }
+#endif
 
         /// <summary>
         /// Gets a value indicating if the sphere is greedy.

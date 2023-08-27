@@ -21,12 +21,15 @@
   <PropertyGroup Condition="'$(GAME)' == 'CS'">
     <DataDir>$(CSDataDir)</DataDir>
     <ModDir>$(CSModDir)</ModDir>
+    <ModOutputDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</ModOutputDir>
     <DefineConstants>$(DefineConstants);CS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GAME)' == 'BH'">
     <DataDir>$(BHDataDir)</DataDir>
     <ModDir>$(BHModDir)</ModDir>
+    <BHBepModDir>$([System.IO.Path]::Combine($(BOHDir), 'BepInEx\plugins'))</BHBepModDir>
+    <ModOutputDir>$([System.IO.Path]::Combine($(BHBepModDir), 'SHRest'))</ModOutputDir>
     <DefineConstants>$(DefineConstants);BH</DefineConstants>
   </PropertyGroup>
 
@@ -52,8 +55,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</OutDir>
-    <PublishDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</PublishDir>
+    <OutDir>$(ModOutputDir)</OutDir>
+    <PublishDir>$(ModOutputDir)</PublishDir>
     <DefineConstants>$(DefineConstants);DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -63,8 +66,8 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</OutDir>
-    <PublishDir>$([System.IO.Path]::Combine($(ModDir), 'SHRest\dll'))</PublishDir>
+    <OutDir>$(ModOutputDir)</OutDir>
+    <PublishDir>$(ModOutputDir)</PublishDir>
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -73,6 +76,17 @@
 
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GAME)' == 'BH'">
+    <Reference Include="Harmony">
+      <HintPath>$([System.IO.Path]::Combine($(BHDataDir), '..\BepInEx\core\0Harmony.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>$([System.IO.Path]::Combine($(BHDataDir), '..\BepInEx\core\BepInEx.dll'))</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

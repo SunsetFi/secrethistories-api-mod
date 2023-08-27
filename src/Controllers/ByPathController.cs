@@ -81,7 +81,7 @@ namespace SHRestAPI.Controllers
                     {
                         if (token.Payload is ElementStack stack)
                         {
-                            return ResourcesManager.GetSpriteForElement(stack.Element.Id);
+                            return ResourcesManager.GetAppropriateSpriteForElement(stack.Element);
                         }
                         else if (token.Payload is Situation situation)
                         {

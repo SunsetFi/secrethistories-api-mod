@@ -12,6 +12,28 @@ namespace SHRestAPI.Payloads
     public class TerrainFeatureTranslationStrategy
     {
         /// <summary>
+        /// Gets the label of this terrain feature.
+        /// </summary>
+        /// <param name="terrain">The terrain feature.</param>
+        /// <returns>The label.</returns>
+        [JsonPropertyGetter("label")]
+        public string GetLabel(TerrainFeature terrain)
+        {
+            return terrain.Label;
+        }
+
+        /// <summary>
+        /// Gets the description of this terrain feature.
+        /// </summary>
+        /// <param name="terrain">The terrain feature.</param>
+        /// <returns>The description.</returns>
+        [JsonPropertyGetter("description")]
+        public string GetDescription(TerrainFeature terrain)
+        {
+            return terrain.Description;
+        }
+
+        /// <summary>
         /// Gets a value indicating if the terrain is sealed.
         /// </summary>
         /// <param name="terrain">The terrain.</param>

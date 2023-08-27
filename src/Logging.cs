@@ -106,8 +106,12 @@ namespace SHRestAPI
                 sb.AppendFormat("    {0}\n", line);
             }
 
-            // Roost.Birdsong.Tweet(level, 0, sb.ToString());
+#if BH
+            // ???
+            SHRestAPIBepPlugin.PublicLogger.LogInfo(sb.ToString());
+#else
             NoonUtility.Log(sb.ToString());
+#endif
         }
     }
 }

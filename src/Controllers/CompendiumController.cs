@@ -80,7 +80,7 @@ namespace SHRestAPI.Controllers
                     throw new NotFoundException($"Element with id {elementId} not found.");
                 }
 
-                var sprite = ResourcesManager.GetSpriteForElement(element.Icon);
+                var sprite = ResourcesManager.GetAppropriateSpriteForElement(element);
                 return sprite.ToTexture().EncodeToPNG();
             });
 

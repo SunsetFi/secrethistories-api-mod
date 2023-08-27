@@ -39,6 +39,8 @@ namespace SHRestAPI.Payloads
             return obj;
         }
 
+#if CS
+        // Another entry that seems to have been removed with BH in a beta
         /// <summary>
         /// Gets what the element burns to.
         /// </summary>
@@ -49,6 +51,7 @@ namespace SHRestAPI.Payloads
         {
             return element.BurnTo;
         }
+#endif
 
         /// <summary>
         /// Gets the comments of the element.
@@ -102,10 +105,15 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("description")]
         public string GetDescription(Element element)
         {
-            return element.Description;
+#if CS
+            return element.Description
+#else
+            return element.Desc;
+#endif
         }
 
-#if BH
+        // Totally removed in BH?  What replaces this?  What did it even do?
+#if FALSE
         /// <summary>
         /// Gets what the element drowns to.
         /// </summary>
