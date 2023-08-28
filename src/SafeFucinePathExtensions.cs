@@ -2,25 +2,23 @@ namespace SHRestAPI
 {
     using System;
     using SecretHistories.Abstract;
-    using SecretHistories.Entities;
-    using SecretHistories.Fucine;
     using SecretHistories.Spheres;
     using SecretHistories.UI;
     using SHRestAPI.Server.Exceptions;
 
     /// <summary>
-    /// Extensions for the <see cref="FucinePath"/> class.
+    /// Extensions for the <see cref="SafeFucinePath"/> class.
     /// </summary>
-    public static class FucinePathExtensions
+    public static class SafeFucinePathExtensions
     {
         /// <summary>
         /// Gets the token at the specified path, or null if the item is not found or is not a token.
         /// </summary>
         /// <param name="path">The path to get the token at.</param>
         /// <returns>The token, or null if the path is not a token.</returns>
-        public static Token GetToken(this FucinePath path)
+        public static Token GetToken(this SafeFucinePath path)
         {
-            return path.WithItemAtAbsolutePath(token => token, sphere => null);
+            return path.TargetToken;
         }
 
         /// <summary>
@@ -29,7 +27,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The type of payload to filter for.</typeparam>
         /// <param name="path">The path to get the payload at.</param>
         /// <returns>The payload if the path represents a token with the correct payload, or null if any conditions were not met.</returns>
-        public static T GetPayload<T>(this FucinePath path)
+        public static T GetPayload<T>(this SafeFucinePath path)
             where T : class, ITokenPayload
         {
             var token = path.GetToken();
@@ -54,32 +52,19 @@ namespace SHRestAPI
         /// <param name="withToken">The funciton to invoke if the item is a token.</param>
         /// <param name="withSphere">The function to invoke if the item is a sphere.</param>
         /// <exception cref="NotFoundException">The path was invalid, or no item was found.</exception>
-        public static void WithItemAtAbsolutePath<T>(this FucinePath path, Action<Token> withToken, Action<Sphere> withSphere)
+        public static void WithItemAtAbsolutePath<T>(this SafeFucinePath path, Action<Token> withToken, Action<Sphere> withSphere)
         {
-            if (!path.IsAbsolute() || path.IsWild() || path.IsRoot())
+            if (path.TargetToken)
             {
-                throw new NotFoundException("The provided path is not an absolute path.");
+                withToken(path.TargetToken);
             }
-
-            if (path.GetEndingPathPart().Category == FucinePathPart.PathCategory.Token)
+            else if (path.TargetSphere)
             {
-                var token = Watchman.Get<HornedAxe>().GetTokenByPath(path);
-                if (token == null || !token.IsValid())
-                {
-                    throw new NotFoundException($"No token found at path \"{path}\".");
-                }
-
-                withToken(token);
+                withSphere(path.TargetSphere);
             }
             else
             {
-                var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(path);
-                if (sphere == null || !sphere.IsValid())
-                {
-                    throw new NotFoundException($"No sphere found at path \"{path}\".");
-                }
-
-                withSphere(sphere);
+                throw new NotFoundException($"No item found at path \"{path}\".");
             }
         }
 
@@ -92,32 +77,19 @@ namespace SHRestAPI
         /// <param name="withSphere">The function to invoke if the item is a sphere.</param>
         /// <returns>The return value from either function.</returns>
         /// <exception cref="NotFoundException">The path was invalid, or no item was found.</exception>
-        public static T WithItemAtAbsolutePath<T>(this FucinePath path, Func<Token, T> withToken, Func<Sphere, T> withSphere)
+        public static T WithItemAtAbsolutePath<T>(this SafeFucinePath path, Func<Token, T> withToken, Func<Sphere, T> withSphere)
         {
-            if (!path.IsAbsolute() || path.IsWild() || path.IsRoot())
+            if (path.TargetToken)
             {
-                throw new NotFoundException("The provided path is not an absolute path.");
+                return withToken(path.TargetToken);
             }
-
-            if (path.GetEndingPathPart().Category == FucinePathPart.PathCategory.Token)
+            else if (path.TargetSphere)
             {
-                var token = Watchman.Get<HornedAxe>().GetTokenByPath(path);
-                if (token == null || !token.IsValid())
-                {
-                    throw new NotFoundException($"No token found at path \"{path}\".");
-                }
-
-                return withToken(token);
+                return withSphere(path.TargetSphere);
             }
             else
             {
-                var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(path);
-                if (sphere == null || !sphere.IsValid())
-                {
-                    throw new NotFoundException($"No sphere found at path \"{path}\".");
-                }
-
-                return withSphere(sphere);
+                throw new NotFoundException($"No item found at path \"{path}\".");
             }
         }
     }

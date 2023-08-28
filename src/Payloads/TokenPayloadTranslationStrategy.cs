@@ -6,6 +6,7 @@ namespace SHRestAPI.Payloads
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
     using SHRestAPI.Server.Exceptions;
+    using static SHRestAPI.SafeFucinePath;
 
     /// <summary>
     /// Translation strategy for the <see cref="payload"/> class.
@@ -57,13 +58,22 @@ namespace SHRestAPI.Payloads
         [JsonPropertySetter("spherePath")]
         public void SetPath(ITokenPayload payload, string path)
         {
-            var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(new FucinePath(path));
-            if (sphere == null || !sphere.IsValid())
+            SafeFucinePath fucinePath;
+            try
+            {
+                fucinePath = new SafeFucinePath(path);
+            }
+            catch (PathElementNotFoundException)
             {
                 throw new BadRequestException($"No sphere found at path \"{path}\".");
             }
 
-            if (!sphere.TryAcceptToken(payload.GetToken(), new Context(Context.ActionSource.PlayerDrag)))
+            if (fucinePath.TargetSphere == null)
+            {
+                throw new BadRequestException($"No sphere found at path \"{path}\".");
+            }
+
+            if (!fucinePath.TargetSphere.TryAcceptToken(payload.GetToken(), new Context(Context.ActionSource.PlayerDrag)))
             {
                 throw new BadRequestException($"The ITokenPayload could not be moved to sphere \"{path}\".");
             }

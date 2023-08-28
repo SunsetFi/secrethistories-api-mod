@@ -110,8 +110,6 @@ public class SHRest : MonoBehaviour
 
     private async Task<bool> OnRequest(IHttpContext context)
     {
-        Logging.LogTrace($"Received request: {context.Request.Method} {context.Request.Path}");
-
         if (context.Request.Method == "OPTIONS")
         {
             // For a proper implementation of CORS, see https://github.com/expressjs/cors/blob/master/lib/index.js#L159

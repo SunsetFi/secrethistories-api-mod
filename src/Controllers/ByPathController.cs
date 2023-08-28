@@ -10,7 +10,6 @@ namespace SHRestAPI.Controllers
 #endif
     using SecretHistories.Entities;
     using SecretHistories.Enums;
-    using SecretHistories.Fucine;
 #if BH
     using SecretHistories.Spheres;
     using SecretHistories.Tokens.Payloads;
@@ -23,6 +22,7 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
     using UnityEngine;
+    using static SHRestAPI.SafeFucinePath;
 
     /// <summary>
     /// A controller dealing with Spheres.
@@ -57,7 +57,7 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                return new FucinePath(path).WithItemAtAbsolutePath(
+                return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => TokenUtils.TokenToJObject(token),
                     sphere => JsonTranslator.ObjectToJson(sphere));
             });
@@ -76,7 +76,7 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                var sprite = new FucinePath(path).WithItemAtAbsolutePath(
+                var sprite = this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token =>
                     {
                         if (token.Payload is ElementStack stack)
@@ -114,7 +114,7 @@ namespace SHRestAPI.Controllers
 
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                return new FucinePath(path).WithItemAtAbsolutePath(
+                return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token =>
                     {
                         TokenUtils.UpdateToken(body, token);
@@ -139,7 +139,7 @@ namespace SHRestAPI.Controllers
         {
             await Dispatcher.RunOnMainThread(() =>
             {
-                new FucinePath(path).WithItemAtAbsolutePath(
+                this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => token.Retire(),
                     sphere => throw new BadRequestException("Cannot delete a sphere."));
             });
@@ -160,7 +160,7 @@ namespace SHRestAPI.Controllers
         {
             var items = await Dispatcher.RunOnMainThread(() =>
             {
-                return new FucinePath(path).WithItemAtAbsolutePath(
+                return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => from child in token.Payload.GetSpheres()
                              let json = JsonTranslator.ObjectToJson(child)
                              select json,
@@ -185,7 +185,7 @@ namespace SHRestAPI.Controllers
 
             var items = await Dispatcher.RunOnMainThread(() =>
             {
-                return new FucinePath(path).WithItemAtAbsolutePath(
+                return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => throw new BadRequestException("Cannot get tokens of a token."),
                     sphere => from token in sphere.GetTokens()
                               where !token.Defunct
@@ -211,7 +211,7 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                return new FucinePath(path).WithItemAtAbsolutePath(
+                return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => throw new BadRequestException("Cannot create tokens in a token."),
                     sphere =>
                     {
@@ -253,7 +253,7 @@ namespace SHRestAPI.Controllers
         // {
         //     await Dispatcher.RunOnMainThread(() =>
         //     {
-        //         var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(new FucinePath(path));
+        //         var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(WebSafeParse(path));
         //         if (sphere == null || !sphere.IsValid())
         //         {
         //             throw new NotFoundException($"No sphere found at path \"{path}\".");
@@ -283,7 +283,7 @@ namespace SHRestAPI.Controllers
         {
             await Dispatcher.RunOnMainThread(() =>
             {
-                var token = new FucinePath(path).GetToken();
+                var token = this.WebSafeParse(path).GetToken();
                 if (token == null)
                 {
                     throw new NotFoundException($"No token found at path \"{path}\".");
@@ -327,7 +327,7 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                var token = new FucinePath(path).GetToken();
+                var token = this.WebSafeParse(path).GetToken();
                 if (token == null)
                 {
                     throw new NotFoundException($"No token found at path \"{path}\".");
@@ -405,7 +405,7 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.RunOnMainThread(() =>
             {
-                var situation = new FucinePath(path).GetPayload<Situation>();
+                var situation = this.WebSafeParse(path).GetPayload<Situation>();
                 if (situation == null)
                 {
                     throw new NotFoundException($"No situation found at path \"{path}\".");
@@ -444,7 +444,7 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<MaybeInstantPayload>();
             await Dispatcher.RunOnMainThread(() =>
             {
-                var terrain = new FucinePath(path).GetPayload<ConnectedTerrain>();
+                var terrain = this.WebSafeParse(path).GetPayload<ConnectedTerrain>();
                 if (terrain == null)
                 {
                     throw new NotFoundException($"No terrain found at path \"{path}\".");
@@ -481,5 +481,21 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK);
         }
 #endif
+
+        private SafeFucinePath WebSafeParse(string path)
+        {
+            try
+            {
+                return new SafeFucinePath(path);
+            }
+            catch (PathElementNotFoundException)
+            {
+                throw new NotFoundException($"No item found at path \"{path}\".");
+            }
+            catch (SafeFucinePathException)
+            {
+                throw new BadRequestException($"Invalid path \"{path}\".");
+            }
+        }
     }
 }

@@ -12,7 +12,10 @@ namespace SHRestAPI
     // TODO: This is old code from stationeers webapi.  Autoccultist uses a better method using schedulers, switch to that.
     public class Dispatcher : MonoBehaviour
     {
+#if CS
         private static Dispatcher instance;
+#endif
+
         private static volatile bool queued = false;
         private static List<QueuedTask> backlog = new List<QueuedTask>(8);
         private static List<QueuedTask> actions = new List<QueuedTask>(8);

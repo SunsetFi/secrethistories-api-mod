@@ -35,10 +35,11 @@ namespace SHRestAPI.Controllers
                         where spheres.Length == 0 || spheres.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))
                         where payloadTypes.Length == 0 || payloadTypes.Any(type => token.PayloadTypeName == type)
                         where elementIds.Length == 0 || (token.Payload is ElementStack elementStack && elementIds.Any(id => elementStack.Element.Id == id))
-                        select TokenUtils.TokenToJObject(token)).ToArray();
+                        select token).ToArray();
             });
 
-            await context.SendResponse(HttpStatusCode.OK, result);
+            // This is risky, but I want to reduce the time spent locking the main thread.
+            await context.SendResponse(HttpStatusCode.OK, result.Select(token => TokenUtils.TokenToJObject(token)).ToArray());
         }
     }
 }
