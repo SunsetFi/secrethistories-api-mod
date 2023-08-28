@@ -9,15 +9,14 @@ namespace SHRestAPI
     using SecretHistories.UI;
 
     /// <summary>
-    /// Parses fucine path strings the hard way, by comparing against what exists at every step.
+    /// Parses fucine path strings the hard way, by comparing against what actually exists at every step.
     /// </summary>
     /// <remarks>
     /// This is requires because in Book of Hours, one element ("t.ambrosial!"), contains a ! in the path.
-    /// This results in the payload id getting cut off early when used with HornedAxe.GetTokenFromPath.
+    /// This results in the payload id getting cut off early when parsing, so HornedAxe.GetTokenFromPath will not find it.
     /// In practice, we could actually just have this return the array of parts and pass that to the FucinePath constructor...
-    /// However, the remembering of what spheres and tokens we found is useful.
+    /// However, the remembering of what spheres and tokens we found is useful, and saves us extra work later.
     /// </remarks>
-    // FIXME: Dont throw web exceptions from here, throw better exceptions and wrap them when used in controllers.
     public class SafeFucinePath
     {
         /// <summary>
