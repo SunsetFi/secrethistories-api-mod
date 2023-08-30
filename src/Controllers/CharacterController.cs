@@ -41,12 +41,9 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
-                return from pair in character.RecipeExecutions
-                       select new
-                       {
-                           recipe = pair.Key,
-                           count = pair.Value,
-                       };
+
+                // Clone the dict so we dont access data from the wrong thread.
+                return character.RecipeExecutions.ToDictionary(x => x.Key, x => x.Value);
             });
 
             await context.SendResponse(HttpStatusCode.OK, result);
