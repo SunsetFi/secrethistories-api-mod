@@ -21,7 +21,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "manifested-elements")]
         public async Task GetUniqueElementsManifested(IHttpContext context)
         {
-            var result = Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
                 return character.UniqueElementsManifested.ToArray();
@@ -41,7 +41,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "executed-recipes")]
         public async Task GetRecipesExecuted(IHttpContext context)
         {
-            var result = Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
                 return from pair in character.RecipeExecutions
