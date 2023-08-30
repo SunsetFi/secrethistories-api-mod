@@ -18,7 +18,7 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <returns>A task that resolves when the request is completed.</returns>
-        [WebRouteMethod(Method = "GET", Path = "manifested-elements")]
+        [WebRouteMethod(Method = "GET", Path = "elements-manifested")]
         public async Task GetUniqueElementsManifested(IHttpContext context)
         {
             var result = await Dispatcher.RunOnMainThread(() =>
