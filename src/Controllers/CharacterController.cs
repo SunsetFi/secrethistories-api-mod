@@ -27,10 +27,7 @@ namespace SHRestAPI.Controllers
                 return character.UniqueElementsManifested.ToArray();
             });
 
-            await context.SendResponse(HttpStatusCode.OK, new
-            {
-                result,
-            });
+            await context.SendResponse(HttpStatusCode.OK, result);
         }
 
         /// <summary>
@@ -52,10 +49,7 @@ namespace SHRestAPI.Controllers
                        };
             });
 
-            await context.SendResponse(HttpStatusCode.OK, new
-            {
-                result,
-            });
+            await context.SendResponse(HttpStatusCode.OK, result);
         }
     }
 }
