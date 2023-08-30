@@ -18,7 +18,7 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <returns>A task that resolves when the request is completed.</returns>
-        [WebRouteMethod(Method = "GET", Path = "elements-manifested")]
+        [WebRouteMethod(Method = "GET", Path = "manifested-elements")]
         public async Task GetUniqueElementsManifested(IHttpContext context)
         {
             var result = Dispatcher.RunOnMainThread(() =>
@@ -38,7 +38,7 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <returns>A task that resolves when the request is completed.</returns>
-        [WebRouteMethod(Method = "GET", Path = "recipes-executed")]
+        [WebRouteMethod(Method = "GET", Path = "executed-recipes")]
         public async Task GetRecipesExecuted(IHttpContext context)
         {
             var result = Dispatcher.RunOnMainThread(() =>
