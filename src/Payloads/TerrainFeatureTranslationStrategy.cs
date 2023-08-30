@@ -90,6 +90,17 @@ namespace SHRestAPI.Payloads
                 terrain.Unshroud(true);
             }
         }
+
+        /// <summary>
+        /// Gets the info recipe for this terrain feature.
+        /// </summary>
+        /// <param name="terrain">The terrain feature.</param>
+        /// <returns>The info recipe.</returns>
+        [JsonPropertyGetter("infoRecipe")]
+        public string GetInfoRecipe(TerrainFeature terrain)
+        {
+            return terrain.InfoRecipe?.Id;
+        }
     }
 }
 #endif

@@ -39,6 +39,8 @@ namespace SHRestAPI.Server
                 .AddRoute(this.OnRequest);
             config.MaxActiveRequests = 200;
             config.SocketBacklog = 200;
+            config.KeepAliveMaxRequests = 200;
+            config.KeepAliveTimeoutSeconds = 10;
 
             this.cancellationTokenSource = new CancellationTokenSource();
             HttpServer.ListenAsync(
