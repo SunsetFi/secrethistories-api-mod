@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Linq;
     using Newtonsoft.Json.Linq;
     using SecretHistories.Entities;
     using SHRestAPI.JsonTranslation;
@@ -293,6 +294,33 @@ namespace SHRestAPI.Payloads
         public string GetVerbIcon(Element element)
         {
             return element.VerbIcon;
+        }
+
+        /// <summary>
+        /// Gets the xtriggers for this element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>The xtriggers.</returns>
+        [JsonPropertyGetter("xtriggers")]
+        public JObject GetXTriggers(Element element)
+        {
+            var obj = new JObject();
+            foreach (var pair in element.XTriggers)
+            {
+                obj[pair.Key] = new JArray(pair.Value.Select(effect =>
+                {
+                    return new JObject
+                    {
+                        ["id"] = effect.Id,
+                        ["morpheffect"] = effect.MorphEffect.ToString().ToLower(),
+                        ["level"] = effect.Level,
+                        ["chance"] = effect.Chance,
+                        ["lever"] = effect.Lever,
+                    };
+                }));
+            }
+
+            return obj;
         }
 
 #if BH

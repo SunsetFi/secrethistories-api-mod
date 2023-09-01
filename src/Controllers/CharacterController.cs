@@ -35,7 +35,7 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <returns>A task that resolves when the request is completed.</returns>
-        [WebRouteMethod(Method = "GET", Path = "executed-recipes")]
+        [WebRouteMethod(Method = "GET", Path = "recipes-executed")]
         public async Task GetRecipesExecuted(IHttpContext context)
         {
             var result = await Dispatcher.RunOnMainThread(() =>
