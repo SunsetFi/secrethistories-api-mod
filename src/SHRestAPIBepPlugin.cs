@@ -1,3 +1,4 @@
+#if BH
 namespace SHRestAPI
 {
     using System;
@@ -44,3 +45,4 @@ namespace SHRestAPI
         }
     }
 }
+#endif

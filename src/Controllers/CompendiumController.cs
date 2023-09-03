@@ -64,10 +64,10 @@ namespace SHRestAPI.Controllers
         }
 
         /// <summary>
-        /// Gets an element by its id.
+        /// Gets the icon of an element.
         /// </summary>
         /// <param name="context">The HTTP Context of the request.</param>
-        /// <param name="elementId">The id of the element to get.</param>
+        /// <param name="elementId">The id of the element to get the icon for.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         [WebRouteMethod(Method = "GET", Path = "elements/:elementId/icon.png")]
         public async Task GetElementIcon(IHttpContext context, string elementId)
@@ -81,6 +81,72 @@ namespace SHRestAPI.Controllers
                 }
 
                 var sprite = ResourcesManager.GetAppropriateSpriteForElement(element);
+                return sprite.ToTexture().EncodeToPNG();
+            });
+
+            context.Response.Headers.Add("Content-Type", "image/png");
+            await context.Response.WriteAllAsync(result);
+        }
+
+        /// <summary>
+        /// Gets all verbs in the compendium.
+        /// </summary>
+        /// <param name="context">The HTTP Context of the request.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [WebRouteMethod(Method = "GET", Path = "verbs")]
+        public async Task GetVerbs(IHttpContext context)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var verbs = this.Compendium.GetEntitiesAsList<Verb>();
+                return from verb in verbs
+                       select JsonTranslator.ObjectToJson(verb);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
+        /// Gets a verb by its id.
+        /// </summary>
+        /// <param name="context">The HTTP Context of the request.</param>
+        /// <param name="verbId">The id of the verb to get.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [WebRouteMethod(Method = "GET", Path = "verbs/:verbId")]
+        public async Task GetVerb(IHttpContext context, string verbId)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var verb = this.Compendium.GetEntityById<Verb>(verbId);
+                if (verb == null)
+                {
+                    throw new NotFoundException($"Verb with id {verbId} not found.");
+                }
+
+                return JsonTranslator.ObjectToJson(verb);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
+        /// Gets the icon for a verb.
+        /// </summary>
+        /// <param name="context">The HTTP Context of the request.</param>
+        /// <param name="verbId">The id of the verb to get the icon for.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [WebRouteMethod(Method = "GET", Path = "verbs/:verbId/icon.png")]
+        public async Task GetVerbIcon(IHttpContext context, string verbId)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var verb = this.Compendium.GetEntityById<Verb>(verbId);
+                if (verb == null)
+                {
+                    throw new NotFoundException($"Verb with id {verbId} not found.");
+                }
+
+                var sprite = ResourcesManager.GetSpriteForVerbLarge(verbId);
                 return sprite.ToTexture().EncodeToPNG();
             });
 

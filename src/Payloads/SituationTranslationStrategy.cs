@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using Newtonsoft.Json.Linq;
     using SecretHistories.Commands.SituationCommands;
     using SecretHistories.Entities;
     using SecretHistories.States;
@@ -34,6 +35,23 @@ namespace SHRestAPI.Payloads
         public bool GetSpontanious(Situation situation)
         {
             return situation.Verb.Spontaneous;
+        }
+
+        /// <summary>
+        /// Gets all aspects native to this verb.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>The situation aspects.</returns>
+        [JsonPropertyGetter("aspects")]
+        public JObject GetAspects(Situation situation)
+        {
+            var value = new JObject();
+            foreach (var pair in situation.Verb.Aspects)
+            {
+                value.Add(pair.Key, pair.Value);
+            }
+
+            return value;
         }
 
         /// <summary>

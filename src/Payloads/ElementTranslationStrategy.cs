@@ -107,7 +107,7 @@ namespace SHRestAPI.Payloads
         public string GetDescription(Element element)
         {
 #if CS
-            return element.Description
+            return element.Description;
 #else
             return element.Desc;
 #endif
@@ -307,6 +307,7 @@ namespace SHRestAPI.Payloads
             var obj = new JObject();
             foreach (var pair in element.XTriggers)
             {
+                // TODO: payload translator for MorphDetails
                 obj[pair.Key] = new JArray(pair.Value.Select(effect =>
                 {
                     return new JObject
@@ -341,7 +342,5 @@ namespace SHRestAPI.Payloads
             return obj;
         }
 #endif
-
-        // TODO: XTriggers
     }
 }

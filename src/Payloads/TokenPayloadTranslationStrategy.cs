@@ -1,15 +1,12 @@
 namespace SHRestAPI.Payloads
 {
     using SecretHistories.Abstract;
-    using SecretHistories.Entities;
-    using SecretHistories.Fucine;
-    using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
     using SHRestAPI.Server.Exceptions;
     using static SHRestAPI.SafeFucinePath;
 
     /// <summary>
-    /// Translation strategy for the <see cref="payload"/> class.
+    /// Translation strategy for the <see cref="ITokenPayload"/> interface.
     /// </summary>
     [JsonTranslatorStrategy]
     [JsonTranslatorTarget(typeof(ITokenPayload))]
