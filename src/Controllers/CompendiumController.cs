@@ -52,7 +52,7 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var element = this.Compendium.GetEntityById<Element>(elementId);
-                if (element == null)
+                if (element == null || !element.IsValid())
                 {
                     throw new NotFoundException($"Element with id {elementId} not found.");
                 }
@@ -75,7 +75,7 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var element = this.Compendium.GetEntityById<Element>(elementId);
-                if (element == null)
+                if (element == null || !element.IsValid())
                 {
                     throw new NotFoundException($"Element with id {elementId} not found.");
                 }
@@ -118,7 +118,7 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var verb = this.Compendium.GetEntityById<Verb>(verbId);
-                if (verb == null)
+                if (verb == null || !verb.IsValid())
                 {
                     throw new NotFoundException($"Verb with id {verbId} not found.");
                 }
@@ -141,7 +141,7 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var verb = this.Compendium.GetEntityById<Verb>(verbId);
-                if (verb == null)
+                if (verb == null || !verb.IsValid())
                 {
                     throw new NotFoundException($"Verb with id {verbId} not found.");
                 }
