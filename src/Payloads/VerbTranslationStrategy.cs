@@ -121,6 +121,11 @@ namespace SHRestAPI.Payloads
             return value;
         }
 
+        /// <summary>
+        /// Gets the aspect hints for this verb.
+        /// </summary>
+        /// <param name="verb">The verb.</param>
+        /// <returns>The aspect hints.</returns>
         [JsonPropertyGetter("hints")]
         public string[] GetHints(Verb verb)
         {

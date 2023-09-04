@@ -55,6 +55,17 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
+        /// Gets the aspect hints for this situation.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>The aspect hints.</returns>
+        [JsonPropertyGetter("hints")]
+        public string[] GetHints(Situation situation)
+        {
+            return situation.Verb.Hints.ToArray();
+        }
+
+        /// <summary>
         /// Gets the time remaining in the situation's current recipe.
         /// </summary>
         /// <param name="situation">The situation.</param>
