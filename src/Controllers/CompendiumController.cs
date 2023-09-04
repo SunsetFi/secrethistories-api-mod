@@ -153,5 +153,28 @@ namespace SHRestAPI.Controllers
             context.Response.Headers.Add("Content-Type", "image/png");
             await context.Response.WriteAllAsync(result);
         }
+
+        /// <summary>
+        /// Gets a recipe by id.
+        /// </summary>
+        /// <param name="context">The HTTP Context of the request.</param>
+        /// <param name="recipeId">The ID of the recipe to get.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [WebRouteMethod(Method = "GET", Path = "recipes/:recipeId")]
+        public async Task GetRecipe(IHttpContext context, string recipeId)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var recipe = this.Compendium.GetEntityById<Recipe>(recipeId);
+                if (recipe == null || !recipe.IsValid())
+                {
+                    throw new NotFoundException($"Recipe with id {recipeId} not found.");
+                }
+
+                return JsonTranslator.ObjectToJson(recipe);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
     }
 }

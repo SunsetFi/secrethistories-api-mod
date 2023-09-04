@@ -56,6 +56,8 @@ namespace SHRestAPI
             }
 
             // Sigh...
+            // FIXME: I think our tasks are continuing on the main thread.
+            // Might need a ConfigureAwait here.
             return source.Task.ContinueWith(t => (T)t.Result);
         }
 
