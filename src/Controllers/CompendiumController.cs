@@ -32,8 +32,8 @@ namespace SHRestAPI.Controllers
             {
                 var elements = this.Compendium.GetEntitiesAsList<Element>();
                 return from element in elements
-                       where isAspect.HasValue && element.IsAspect == isAspect
-                       where isHidden.HasValue && element.IsHidden == isHidden
+                       where !isAspect.HasValue || element.IsAspect == isAspect
+                       where !isHidden.HasValue || element.IsHidden == isHidden
                        select JsonTranslator.ObjectToJson(element);
             });
 
@@ -152,6 +152,24 @@ namespace SHRestAPI.Controllers
 
             context.Response.Headers.Add("Content-Type", "image/png");
             await context.Response.WriteAllAsync(result);
+        }
+
+        /// <summary>
+        /// Gets all recipes in the compendium.
+        /// </summary>
+        /// <param name="context">The HTTP Context of the request.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [WebRouteMethod(Method = "GET", Path = "recipes")]
+        public async Task GetRecipes(IHttpContext context)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var recipes = this.Compendium.GetEntitiesAsList<Recipe>();
+                return from recipe in recipes
+                       select JsonTranslator.ObjectToJson(recipe);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
         }
 
         /// <summary>
