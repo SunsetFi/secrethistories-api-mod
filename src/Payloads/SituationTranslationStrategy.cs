@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Linq;
     using Newtonsoft.Json.Linq;
     using SecretHistories.Commands.SituationCommands;
     using SecretHistories.Entities;
@@ -63,6 +64,17 @@ namespace SHRestAPI.Payloads
         public string[] GetHints(Situation situation)
         {
             return situation.Verb.Hints.ToArray();
+        }
+
+        /// <summary>
+        /// Gets all input thresholds of this situation.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>The input thresholds.</returns>
+        [JsonPropertyGetter("thresholds")]
+        public JObject[] GetThresholds(Situation situation)
+        {
+            return situation.Verb.Thresholds.Select(JsonTranslator.ObjectToJson).ToArray();
         }
 
         /// <summary>
