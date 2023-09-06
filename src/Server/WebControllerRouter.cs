@@ -94,7 +94,7 @@ namespace SHRestAPI.Server
 
             if (context.PathParameters.ContainsKey(parameterInfo.Name))
             {
-                return this.ConvertPathParameter(parameterInfo.ParameterType, Uri.UnescapeDataString(context.PathParameters[parameterInfo.Name]));
+                return this.ConvertPathParameter(parameterInfo.ParameterType, context.PathParameters[parameterInfo.Name]);
             }
 
             throw new Exception(string.Format("Unable to determine value for parameter '{0} of route method '{1}'", parameterInfo.Name, this.handler.Name));
@@ -102,6 +102,8 @@ namespace SHRestAPI.Server
 
         private object ConvertPathParameter(Type targetType, string value)
         {
+            value = Uri.UnescapeDataString(value);
+
             if (targetType == typeof(string))
             {
                 return value;
