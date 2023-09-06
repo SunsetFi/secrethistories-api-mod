@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using System.Linq;
     using Newtonsoft.Json.Linq;
     using SecretHistories.Entities;
@@ -68,6 +69,30 @@ namespace SHRestAPI.Payloads
         public JObject[] GetSlots(Recipe recipe)
         {
             return recipe.Slots.Select(JsonTranslator.ObjectToJson).ToArray();
+        }
+
+        [JsonPropertyGetter("warmup")]
+        public float GetWarmup(Recipe recipe)
+        {
+            return recipe.Warmup;
+        }
+
+        [JsonPropertyGetter("requirements")]
+        public IDictionary<string, string> GetTableRequirements(Recipe recipe)
+        {
+            return recipe.Reqs;
+        }
+
+        [JsonPropertyGetter("extantRequirements")]
+        public IDictionary<string, string> GetExtantRequirements(Recipe recipe)
+        {
+            return recipe.ExtantReqs;
+        }
+
+        [JsonPropertyGetter("effects")]
+        public IDictionary<string, string> GetEffects(Recipe recipe)
+        {
+            return recipe.Effects;
         }
     }
 }
