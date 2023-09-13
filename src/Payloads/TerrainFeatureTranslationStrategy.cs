@@ -1,6 +1,7 @@
 #if BH
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using SecretHistories.Tokens.Payloads;
     using SHRestAPI.JsonTranslation;
 
@@ -31,6 +32,19 @@ namespace SHRestAPI.Payloads
         public string GetDescription(TerrainFeature terrain)
         {
             return terrain.Description;
+        }
+
+        /// <summary>
+        /// Gets the aspects for this terrain feature.
+        /// </summary>
+        /// <param name="terrain">The terrain feature.</param>
+        /// <returns>The aspects.</returns>
+        [JsonPropertyGetter("aspects")]
+        public Dictionary<string, int> GetAspects(TerrainFeature terrain)
+        {
+            // These are glued to the TerrainFeature and given through this function call.
+            // InfoRecipe.Aspects is not involved.
+            return terrain.GetAspects(false);
         }
 
         /// <summary>
@@ -100,6 +114,18 @@ namespace SHRestAPI.Payloads
         public string GetInfoRecipe(TerrainFeature terrain)
         {
             return terrain.InfoRecipe?.Id;
+        }
+
+        [JsonPropertyGetter("infoRecipeStartLabel")]
+        public string GetInfoRecipeStartLabel(TerrainFeature terrain)
+        {
+            return terrain.InfoRecipe?.StartLabel;
+        }
+
+        [JsonPropertyGetter("infoRecipeStartDescription")]
+        public string GetInfoRecipeStartDescription(TerrainFeature terrain)
+        {
+            return terrain.InfoRecipe?.StartDescription;
         }
     }
 }

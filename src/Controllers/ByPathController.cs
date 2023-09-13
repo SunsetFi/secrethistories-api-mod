@@ -273,6 +273,29 @@ namespace SHRestAPI.Controllers
         // }
 
         /// <summary>
+        /// Focuses the item at the given path.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="path">The path of the item to focus.</param>
+        /// <returns>A task that resolves once the request is completed.</returns>
+        [WebRouteMethod(Method = "POST", Path = "**path/focus")]
+        public async Task FocusItemAtPath(IHttpContext context, string path)
+        {
+            await Dispatcher.RunOnMainThread(async () =>
+            {
+                var token = this.WebSafeParse(path).GetToken();
+                if (token == null)
+                {
+                    throw new NotFoundException($"No token found at path \"{path}\".");
+                }
+
+                await BHCamera.FocusToken(token);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK);
+        }
+
+        /// <summary>
         /// Opens the item at the given path.
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
