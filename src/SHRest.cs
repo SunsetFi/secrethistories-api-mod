@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -26,6 +27,17 @@ public class SHRest : MonoBehaviour
     /// The web server instance.
     /// </summary>
     private WebServer webServer;
+
+    /// <summary>
+    /// Gets the path to the web host content.
+    /// </summary>
+    public static string WebhostPath
+    {
+        get
+        {
+            return Path.Combine(Path.GetDirectoryName(typeof(SHRest).Assembly.Location), "web-content");
+        }
+    }
 
     /// <summary>
     /// Initialize the mod.
@@ -80,7 +92,9 @@ public class SHRest : MonoBehaviour
     private void RegisterControllers(Assembly assembly)
     {
         var controllerTypes = (from type in assembly.GetTypes()
-                               where type.GetCustomAttribute(typeof(WebControllerAttribute)) != null
+                               let attr = (WebControllerAttribute)type.GetCustomAttribute(typeof(WebControllerAttribute))
+                               where attr != null
+                               orderby attr.Priority descending
                                select type).ToArray();
 
         var controllerRoutes = (from type in controllerTypes

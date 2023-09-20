@@ -35,7 +35,7 @@ namespace SHRestAPI.Controllers
             var request = context.Request;
             var response = context.Response;
 
-            var speed = await Dispatcher.RunOnMainThread(() => Watchman.Get<Heart>().GetEffectiveGameSpeed());
+            var speed = await Dispatcher.RunOnMainThread(() => Watchman.Get<Heart>().GetEffectiveGameSpeed().ToString());
             await context.SendResponse(HttpStatusCode.OK, new { speed });
         }
 

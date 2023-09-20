@@ -95,5 +95,22 @@ namespace SHRestAPI
                 await response.WriteAllAsync(body, contentType);
             }
         }
+
+        /// <summary>
+        /// Sends a file by path.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="path">The path of the file to send.</param>
+        /// <returns>A task that resolves when the request is completed.</returns>
+        public static async Task SendFileResponse(this IHttpContext context, string path)
+        {
+            var mimeType = MimeMapper.GetMimeType(Path.GetExtension(path));
+            var response = context.Response;
+
+            response.StatusCode = HttpStatusCode.OK;
+            response.Headers.Add("Content-Type", mimeType);
+
+            await response.WriteAllAsync(File.ReadAllBytes(path), mimeType);
+        }
     }
 }
