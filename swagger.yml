@@ -1,0 +1,303 @@
+openapi: 3.0.3
+info:
+  title: Secret histories API
+  description: |-
+    This is an API for interacting with [Cultist Simulator](https://store.steampowered.com/app/718670/Cultist_Simulator/) and [Book of Hours](https://store.steampowered.com/app/1028310/BOOK_OF_HOURS/) remotely.
+    A Web and NodeJS compatible api is provided [here](https://github.com/SunsetFi/secrethistories-api)
+
+    Some useful links:
+    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
+    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  contact:
+    email: sunsetfidev@gmail.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081/api
+tags:
+  - name: Spheres
+    description: |-
+      Spheres are the containers of the game.  They can contain
+      tokens, which encompass everything in the game.
+  - name: Tokens
+    description: |-
+      Tokens represent everything in the game.  From cards, to verbs, to items found around the House.
+  - name: Time
+    description: Time, events, and the means of manipulating it
+    externalDocs:
+      description: Find out more about our store
+      url: http://swagger.io
+paths:
+  /time/speed:
+    get:
+      tags:
+        - Time
+      summary: Gets the current game speed
+      responses:
+        "200":
+          description: Returns the current game speed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  speed:
+                    type: string
+                    description: The game speed to set
+                    enum:
+                      - Paused
+                      - Normal
+                      - Fast
+                      - VeryFast
+                      - VeryVeryFast
+    post:
+      tags:
+        - Time
+      summary: Sets the current game speed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                speed:
+                  type: string
+                  enum:
+                    - Paused
+                    - Normal
+                    - Fast
+                    - VeryFast
+                    - VeryVeryFast
+      responses:
+        "200":
+          description: The speed has been set.
+  /time/beat:
+    post:
+      tags:
+        - Time
+      summary: Advances the game by the given time span
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seconds:
+                  type: float
+                  description: The number of seconds to advance the game by
+      responses:
+        "200":
+          description: The game time has been advanced.
+  /time/events:
+    get:
+      tags:
+        - Time
+      summary: Gets the next set of pending game events
+      responses:
+        "200":
+          description: Returns the next set of pending game events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nextCardDecay:
+                    type: float
+                    description: The number of seconds until the next card decay
+                  nextRecipeCompletion:
+                    type: float
+                    description: The number of seconds until the next recipe completion
+  /time/events/beat:
+    post:
+      tags:
+        - Time
+      summary: Advances the game to the next event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: string
+                  enum:
+                    - CardDecay
+                    - RecipeCompletion
+                    - Either
+                  description: Specifies which event to advance to
+      responses:
+        "200":
+          description: The game time has been advanced.
+        "409":
+          description: The game time could not be advanced because there are no pending events of the specified type.
+components:
+  schemas:
+    Sphere:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        path:
+          type: string
+          readOnly: true
+        category:
+          type: string
+          readOnly: true
+        shrouded:
+          type: boolean
+          readOnly: true
+        label:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        consumes:
+          type: boolean
+          readOnly: true
+        greedy:
+          type: boolean
+          readOnly: true
+        essentialAspects:
+          type: object
+          readOnly: true
+        requiredAspects:
+          type: object
+          readOnly: true
+        forbiddenAspects:
+          type: object
+          readOnly: true
+    Token:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        path:
+          type: string
+          readOnly: true
+        spherePath:
+          type: string
+        payloadType:
+          type: string
+          readOnly: true
+      ElementStack:
+        allOf:
+          - $ref: "#/components/schemas/Token"
+          - type: object
+            properties:
+              elementId:
+                type: string
+                readOnly: true
+              quantity:
+                type: integer
+              lifetimeRemaining:
+                type: float
+                readOnly: true
+              aspects:
+                type: object
+                readOnly: true
+              mutations:
+                type: object
+              shrouded:
+                type: object
+              label:
+                type: string
+                readOnly: true
+              description:
+                type: string
+                readOnly: true
+              icon:
+                type: string
+                readOnly: true
+              uniquenessGroup:
+                type: string
+                readOnly: true
+              decays:
+                type: boolean
+                readOnly: true
+              metafictional:
+                type: boolean
+                readOnly: true
+              unique:
+                type: boolean
+                readOnly: true
+      Situation:
+        allOf:
+          - $ref: "#/components/schemas/Token"
+          - type: object
+            properties:
+              verbId:
+                type: string
+                readOnly: true
+              spontanious:
+                type: boolean
+                readOnly: true
+              aspects:
+                type: object
+                readOnly: true
+              hints:
+                type: object
+                readOnly: true
+              thresholds:
+                # TODO: Document threshold object
+                type: object
+                readOnly: true
+              timeRemaining:
+                type: float
+                readOnly: true
+              recipeId:
+                type: string
+              recipeLabel:
+                type: string
+                readOnly: true
+              currentRecipeId:
+                type: string
+                readOnly: true
+              currentRecipeLabel:
+                type: string
+                readOnly: true
+              state:
+                type: string
+                readOnly: true
+              label:
+                type: string
+                readOnly: true
+              description:
+                type: string
+                readOnly: true
+              open:
+                type: boolean
+      TerrainFeature:
+        type: object
+        properties:
+          label:
+            type: string
+            readOnly: true
+          description:
+            type: string
+            readOnly: true
+          aspects:
+            type: object
+            readOnly: true
+          sealed:
+            type: boolean
+          shrouded:
+            type: boolean
+          infoRecipeId:
+            type: string
+            readOnly: true
+      ConnectedTerrain:
+        allOf:
+          - $ref: "#/components/schemas/TerrainFeature"
+          - type: object
+            properties:
+              unlockRequirements:
+                type: object
+                readOnly: true
+              unlockForbiddens:
+                type: object
+                readOnly: true
+              unlockEssentials:
+                type: object
+                readOnly: true

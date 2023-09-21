@@ -110,23 +110,23 @@ namespace SHRestAPI.Payloads
         /// </summary>
         /// <param name="terrain">The terrain feature.</param>
         /// <returns>The info recipe.</returns>
-        [JsonPropertyGetter("infoRecipe")]
+        [JsonPropertyGetter("infoRecipeId")]
         public string GetInfoRecipe(TerrainFeature terrain)
         {
             return terrain.InfoRecipe?.Id;
         }
 
-        [JsonPropertyGetter("infoRecipeStartLabel")]
-        public string GetInfoRecipeStartLabel(TerrainFeature terrain)
-        {
-            return terrain.InfoRecipe?.StartLabel;
-        }
+        // [JsonPropertyGetter("infoRecipeStartLabel")]
+        // public string GetInfoRecipeStartLabel(TerrainFeature terrain)
+        // {
+        //     return terrain.InfoRecipe?.StartLabel;
+        // }
 
-        [JsonPropertyGetter("infoRecipeStartDescription")]
-        public string GetInfoRecipeStartDescription(TerrainFeature terrain)
-        {
-            return terrain.InfoRecipe?.StartDescription;
-        }
+        // [JsonPropertyGetter("infoRecipeStartDescription")]
+        // public string GetInfoRecipeStartDescription(TerrainFeature terrain)
+        // {
+        //     return terrain.InfoRecipe?.StartDescription;
+        // }
     }
 }
 #endif
