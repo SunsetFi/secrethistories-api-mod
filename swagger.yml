@@ -4,8 +4,6 @@ info:
   description: |-
     This is an API for interacting with [Cultist Simulator](https://store.steampowered.com/app/718670/Cultist_Simulator/) and [Book of Hours](https://store.steampowered.com/app/1028310/BOOK_OF_HOURS/) remotely.
     A Web and NodeJS compatible api is provided [here](https://github.com/SunsetFi/secrethistories-api)
-  contact:
-    email: sunsetfidev@gmail.com
   version: 1.0.0
 externalDocs:
     description: More information is available at the repository
@@ -20,12 +18,11 @@ tags:
       tokens, which encompass everything in the game.
   - name: Tokens
     description: |-
-      Tokens represent everything in the game.  From cards, to verbs, to items found around the House.
+      Tokens represent every active item in the game.  From cards, to verbs, to items found around the House, to rooms of the house itself.
   - name: Time
     description: Time, events, and the means of manipulating it
-    externalDocs:
-      description: Find out more about our store
-      url: http://swagger.io
+  - name: Compendium
+    description: The game's core data, containing definitions of cards, attributes, elements, recipes, and everything else.
 paths:
   /time/speed:
     get:
