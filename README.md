@@ -17,7 +17,7 @@ The Book of Hours build requires BepInEx to be installed into Book of Hours. Thi
 
 ### Cultist Simulator
 
-The Cultist Simulator build is standalone and uses the game's built in mod loader. No additional requirements are needed.
+The Cultist Simulator build is standalone and uses the game's built in mod loader. Since it is a DLL mod, the [GHIRBI](https://steamcommunity.com/sharedfiles/filedetails/?id=2901287611) mod must also be installed.
 
 ## Building
 
