@@ -4,6 +4,7 @@ namespace SHRestAPI.Controllers
     using System.Threading.Tasks;
     using Ceen;
     using SecretHistories.Entities;
+    using SecretHistories.Services;
     using SecretHistories.UI;
     using SHRestAPI.Server.Attributes;
 
@@ -13,6 +14,36 @@ namespace SHRestAPI.Controllers
     [WebController(Path = "api/character")]
     public class CharacterController
     {
+        /// <summary>
+        /// Gets the active legacy, if any.
+        /// </summary>
+        /// <param name="context">The HTTP request context.</param>
+        /// <returns>A task that completes when the request is handled.</returns>
+        [WebRouteMethod(Method = "GET", Path = "legacy")]
+        public async Task GetLegacy(IHttpContext context)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                string legacyId = null;
+                string legacyLabel = null;
+                var stageHand = Watchman.Get<StageHand>();
+                if (stageHand.SceneIsActive(Constants.GameScene))
+                {
+                    var protag = Watchman.Get<Stable>().Protag();
+                    legacyId = protag.ActiveLegacy.Id;
+                    legacyLabel = protag.ActiveLegacy.Label;
+                }
+
+                return new
+                {
+                    legacyId,
+                    legacyLabel,
+                };
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
         /// <summary>
         /// Gets all elements manifested this game.
         /// </summary>
@@ -30,6 +61,7 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK, result);
         }
 
+#if BH
         /// <summary>
         /// Gets all ambittable recipes unlocked.
         /// </summary>
@@ -46,6 +78,7 @@ namespace SHRestAPI.Controllers
 
             await context.SendResponse(HttpStatusCode.OK, result);
         }
+#endif
 
         /// <summary>
         /// Gets all recipes executed.
