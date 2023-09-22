@@ -1,6 +1,6 @@
-# SHRestAPI
+# Secret Histories API
 
-Rest API server for Secret Histories games.
+A RESTful API server for allowing externally reading data from and interacting with games built with the Secret Histories engine.
 
 It currently supports:
 
