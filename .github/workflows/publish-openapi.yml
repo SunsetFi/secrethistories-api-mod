@@ -5,7 +5,8 @@ jobs:
     name: Deploy OpenAPI
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      contents: write
+      pages: write
     steps:
     # Any prerequisite steps
     - uses: actions/checkout@master
