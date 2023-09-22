@@ -35,6 +35,8 @@ Once the mod is installed, it will open port 8081 from within the game engine an
 
 See the API docs for usage information.
 
+If you are looking to built a webapp or nodejs application interacting with the game, you may wish to see the companion [secrethistories-api](https://github.com/SunsetFi/secrethistories-api) npm library providing a typescript-typed API wrapper around the endpoints of this mod.
+
 ## API Docs
 
 Documentation for the API can be found at:
