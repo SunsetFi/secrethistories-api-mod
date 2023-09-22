@@ -66,42 +66,6 @@ namespace SHRestAPI.Controllers
         }
 
         /// <summary>
-        /// Gets the icon in png format from the token.
-        /// </summary>
-        /// <param name="context">The HTTP context of the request.</param>
-        /// <param name="path">The fucine path of the item to get the image of.</param>
-        /// <returns>A task that resolves when the request is completed.</returns>
-        [WebRouteMethod(Method = "GET", Path = "**path/icon.png")]
-        public async Task GetPathIcon(IHttpContext context, string path)
-        {
-            var result = await Dispatcher.RunOnMainThread(() =>
-            {
-                var sprite = this.WebSafeParse(path).WithItemAtAbsolutePath(
-                    token =>
-                    {
-                        if (token.Payload is ElementStack stack)
-                        {
-                            return ResourcesManager.GetAppropriateSpriteForElement(stack.Element);
-                        }
-                        else if (token.Payload is Situation situation)
-                        {
-                            return ResourcesManager.GetSpriteForVerbLarge(situation.VerbId);
-                        }
-                        else
-                        {
-                            throw new BadRequestException("Cannot get icon for token payload type " + token.Payload.GetType().FullName);
-                        }
-                    },
-                    sphere => throw new BadRequestException("Cannot get icon for sphere."));
-
-                return sprite.ToTexture().EncodeToPNG();
-            });
-
-            context.Response.Headers.Add("Content-Type", "image/png");
-            await context.Response.WriteAllAsync(result);
-        }
-
-        /// <summary>
         /// Modifies an item from a path.
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
@@ -147,6 +111,42 @@ namespace SHRestAPI.Controllers
             await Settler.AwaitSettled();
 
             await context.SendResponse(HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Gets the icon in png format from the token.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="path">The fucine path of the item to get the image of.</param>
+        /// <returns>A task that resolves when the request is completed.</returns>
+        [WebRouteMethod(Method = "GET", Path = "**path/icon.png")]
+        public async Task GetPathIcon(IHttpContext context, string path)
+        {
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var sprite = this.WebSafeParse(path).WithItemAtAbsolutePath(
+                    token =>
+                    {
+                        if (token.Payload is ElementStack stack)
+                        {
+                            return ResourcesManager.GetAppropriateSpriteForElement(stack.Element);
+                        }
+                        else if (token.Payload is Situation situation)
+                        {
+                            return ResourcesManager.GetSpriteForVerbLarge(situation.VerbId);
+                        }
+                        else
+                        {
+                            throw new BadRequestException("Cannot get icon for token payload type " + token.Payload.GetType().FullName);
+                        }
+                    },
+                    sphere => throw new BadRequestException("Cannot get icon for sphere."));
+
+                return sprite.ToTexture().EncodeToPNG();
+            });
+
+            context.Response.Headers.Add("Content-Type", "image/png");
+            await context.Response.WriteAllAsync(result);
         }
 
         /// <summary>
@@ -272,6 +272,7 @@ namespace SHRestAPI.Controllers
         //     await context.SendResponse(HttpStatusCode.OK);
         // }
 
+#if BH
         /// <summary>
         /// Focuses the item at the given path.
         /// </summary>
@@ -294,6 +295,7 @@ namespace SHRestAPI.Controllers
 
             await context.SendResponse(HttpStatusCode.OK);
         }
+#endif
 
         /// <summary>
         /// Opens the item at the given path.
