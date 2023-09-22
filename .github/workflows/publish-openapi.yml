@@ -4,11 +4,11 @@ jobs:
   deploy-openapi:
     name: Deploy OpenAPI
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
-
     # Any prerequisite steps
     - uses: actions/checkout@master
-
     # Deploy to local repo
     - name: Deploy
       uses: s0/git-publish-subdir-action@develop
