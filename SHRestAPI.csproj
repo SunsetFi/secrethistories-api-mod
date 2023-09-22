@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Target Name="CheckEnvironmentVars">
     <Error Text="Please set the BOHDir environment variable." Condition="'$(BOHDir)' == ''" ContinueOnError="false" />
+    <Error Text="Please set the CSDir environment variable." Condition="'$(CSDir)' == ''" ContinueOnError="false" />
     <Error Text="Please set the GAME environment variable." Condition="'$(GAME)' == ''" ContinueOnError="false" />
   </Target>
 
