@@ -42,3 +42,10 @@ If you are looking to build a webapp or nodejs application that interacts with t
 Documentation for the API can be found at:
 
 https://sunsetfi.github.io/secrethistories-api-mod
+
+## TODO
+
+I tried really hard to get WebSockets working in this thing, but Unity/Mono doesn't implement them and all external implementations I can find have crippled basic http support.
+Should either write our own http server (not as hard as it sounds, but time consuming), or run a crippled third party websocket server on a different port.
+
+For now, using long polling.
