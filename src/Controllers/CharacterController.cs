@@ -5,6 +5,7 @@ namespace SHRestAPI.Controllers
     using SecretHistories.Entities;
     using SecretHistories.Services;
     using SecretHistories.UI;
+    using SHRestAPI.Payloads;
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
 
@@ -34,14 +35,62 @@ namespace SHRestAPI.Controllers
                     legacyLabel = protag.ActiveLegacy.Label;
                 }
 
-                return new
+                return new LegacyPayload
                 {
-                    legacyId,
-                    legacyLabel,
+                    LegacyId = legacyId,
+                    LegacyLabel = legacyLabel,
                 };
             });
 
             await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
+        /// Polls the legacy by delaying the response until either the legacy changes or the timeout is reached.
+        /// </summary>
+        /// <param name="context">The HTTP Context.</param>
+        /// <returns>A task that completes when the request is handled.</returns>
+        [WebRouteMethod(Method = "GET", Path = "legacy/poll")]
+        public async Task PollLegacy(IHttpContext context)
+        {
+            context.QueryString.TryGetValue("timeout", out var timeoutStr);
+            int.TryParse(timeoutStr, out var timeout);
+
+            context.QueryString.TryGetValue("resolution", out var resolutionStr);
+            int.TryParse(resolutionStr, out var resolution);
+
+            context.QueryString.TryGetValue("previousHash", out var previousHashStr);
+            int.TryParse(previousHashStr, out var previousHash);
+
+            var result = await Polling.Poll(
+                () =>
+                {
+                    string legacyId = null;
+                    string legacyLabel = null;
+                    var stageHand = Watchman.Get<StageHand>();
+                    if (stageHand.SceneIsActive(Constants.GameScene))
+                    {
+                        var protag = Watchman.Get<Stable>().Protag();
+                        legacyId = protag.ActiveLegacy.Id;
+                        legacyLabel = protag.ActiveLegacy.Label;
+                    }
+
+                    return new LegacyPayload
+                    {
+                        LegacyId = legacyId,
+                        LegacyLabel = legacyLabel,
+                    };
+                },
+                previousHash,
+                timeout,
+                resolution,
+                x => x.LegacyId != null ? x.LegacyId.GetHashCode() : 0);
+
+            await context.SendResponse(HttpStatusCode.OK, new
+            {
+                hash = result.Item1,
+                legacy = result.Item2,
+            });
         }
 
         /// <summary>

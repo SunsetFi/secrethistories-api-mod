@@ -32,7 +32,17 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "speed")]
         public async Task GetSpeed(IHttpContext context)
         {
-            var speed = await Dispatcher.RunOnMainThread(() => Watchman.Get<Heart>().GetEffectiveGameSpeed().ToString());
+            var speed = await Dispatcher.RunOnMainThread(() =>
+                {
+                    var heart = Watchman.Get<Heart>();
+                    if (!heart)
+                    {
+                        throw new ConflictException("The game is not in a running state.");
+                    }
+
+                    return heart.GetEffectiveGameSpeed().ToString();
+                });
+
             await context.SendResponse(HttpStatusCode.OK, new { speed });
         }
 

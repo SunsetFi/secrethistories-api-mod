@@ -8,6 +8,8 @@ using SHRestAPI.JsonTranslation;
 using SHRestAPI.Server;
 using SHRestAPI.Server.Attributes;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// This is the entry point for the SHRestAPI mod.
@@ -68,6 +70,9 @@ public class SHRest : MonoBehaviour
             JsonTranslator.LoadJsonTranslatorStrategies(ownAssembly);
 
             this.RegisterControllers(ownAssembly);
+
+            SceneManager.sceneLoaded += new UnityAction<Scene, LoadSceneMode>(this.HandleSceneLoaded);
+            SceneManager.sceneUnloaded += new UnityAction<Scene>(this.HandleSceneUnloaded);
         }
         catch (Exception ex)
         {
@@ -83,6 +88,14 @@ public class SHRest : MonoBehaviour
         {
             Logging.LogError($"Failed to start CSRest Server: {ex}");
         }
+    }
+
+    /// <summary>
+    /// Unity callback for when the game updates.
+    /// </summary>
+    public void Update()
+    {
+        GameEventSource.RaiseGameTick();
     }
 
     private void RegisterControllers(Assembly assembly)
@@ -105,6 +118,22 @@ public class SHRest : MonoBehaviour
         }
 
         Logging.LogTrace($"Loaded {controllerRoutes.Length} routes from {controllerTypes.Length} controllers in {assembly.FullName}");
+    }
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == Constants.GameScene)
+        {
+            GameEventSource.RaiseGameStarted();
+        }
+    }
+
+    private void HandleSceneUnloaded(Scene scene)
+    {
+        if (scene.name == Constants.GameScene)
+        {
+            GameEventSource.RaiseGameEnded();
+        }
     }
 
     private void StartServer()

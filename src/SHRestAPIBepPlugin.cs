@@ -25,6 +25,8 @@ namespace SHRestAPI
             PublicLogger = this.Logger;
             try
             {
+                // Note: this is a hack to get the SHRestAPI to load.  It's not a great solution, but it works.
+                // SHRest will be destroyed after this.
                 SHRest.Initialise();
                 this.Logger.LogInfo("SH.Initialize completed.");
             }
@@ -42,6 +44,7 @@ namespace SHRestAPI
         private void Update()
         {
             Dispatcher.Drain();
+            GameEventSource.RaiseGameTick();
         }
     }
 }
