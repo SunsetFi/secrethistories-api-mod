@@ -16,7 +16,7 @@ namespace SHRestAPI.Controllers
     [WebController(Path = "/", Priority = -1000)]
     public class WebhostController
     {
-        private readonly string favIconElement = "readable";
+        private readonly string favIconElement = "journal.twiceborn";
 
         /// <summary>
         /// Gets the favicon for hosted content.
