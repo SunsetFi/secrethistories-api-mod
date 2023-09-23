@@ -1,7 +1,6 @@
 namespace SHRestAPI
 {
     using System;
-    using System.Reflection;
 
     /// <summary>
     /// Extensions for the <see cref="Exception"/> class.

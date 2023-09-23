@@ -4,8 +4,11 @@ namespace SHRestAPI.Controllers
     using System.Text;
     using System.Threading.Tasks;
     using Ceen;
+    using SecretHistories.Entities;
+    using SecretHistories.UI;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
+    using UnityEngine;
 
     /// <summary>
     /// A controller for providing hosted web content.
@@ -13,6 +16,33 @@ namespace SHRestAPI.Controllers
     [WebController(Path = "/", Priority = -1000)]
     public class WebhostController
     {
+        private readonly string favIconElement = "readable";
+
+        /// <summary>
+        /// Gets the favicon for hosted content.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <returns>A task that resolves when the request is completed.</returns>
+        [WebRouteMethod(Method = "GET", Path = "favicon.png")]
+        public async Task GetFavIcon(IHttpContext context)
+        {
+            // TODO: We really want an ICO here as that is what everything uses by default.
+            var result = await Dispatcher.RunOnMainThread(() =>
+            {
+                var element = Watchman.Get<Compendium>().GetEntityById<Element>(this.favIconElement);
+                if (element == null || !element.IsValid())
+                {
+                    throw new NotFoundException($"Element with id {this.favIconElement} not found.");
+                }
+
+                var sprite = ResourcesManager.GetAppropriateSpriteForElement(element);
+                return sprite.ToTexture().EncodeToPNG();
+            });
+
+            context.Response.Headers.Add("Content-Type", "image/png");
+            await context.Response.WriteAllAsync(result);
+        }
+
         /// <summary>
         /// Gets the index of the web host.
         /// </summary>
@@ -73,7 +103,7 @@ namespace SHRestAPI.Controllers
             }
 
             var body = new StringBuilder();
-            body.Append("<html><body><ul>");
+            body.Append("""<html><head><link rel="icon" type="image/png" href="/favicon.png"></head><body><ul>""");
 
             var directories = Directory.GetDirectories(path);
             foreach (var directory in directories)

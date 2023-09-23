@@ -114,7 +114,7 @@ namespace SHRestAPI
                 throw new Exception($"Path fragment {path} does not start with a /! or !, so it cannot be a token.");
             }
 
-            var candidates = from.GetTokens().ToArray();
+            var candidates = from.Tokens.ToArray();
             Array.Sort(candidates, TokenIdLengthComparator.Instance);
             foreach (var token in candidates)
             {

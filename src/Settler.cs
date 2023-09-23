@@ -17,7 +17,7 @@ namespace SHRestAPI
         {
             while (await IsGameStarted() == false)
             {
-                Task.Delay(100).Wait();
+                await Task.Delay(100);
             }
         }
 
@@ -32,7 +32,7 @@ namespace SHRestAPI
         {
             while (await IsSettled() == false)
             {
-                Task.Delay(100).Wait();
+                await Task.Delay(100);
             }
 
             // Would be great to do this, but it looks like this wont stop the animations, and the animation will also call Arrive on completed.

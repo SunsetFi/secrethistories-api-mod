@@ -187,7 +187,7 @@ namespace SHRestAPI.Controllers
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => throw new BadRequestException("Cannot get tokens of a token."),
-                    sphere => from token in sphere.GetTokens()
+                    sphere => from token in sphere.Tokens
                               where !token.Defunct
                               where payloadType == null || token.PayloadTypeName == payloadType
                               where entityId == null || token.PayloadEntityId == entityId
@@ -258,7 +258,7 @@ namespace SHRestAPI.Controllers
         //         {
         //             throw new NotFoundException($"No sphere found at path \"{path}\".");
         //         }
-        //         foreach (var token in sphere.GetTokens().ToArray())
+        //         foreach (var token in sphere.Tokens.ToArray())
         //         {
         //             // Don't delete things we dont care about.
         //             // This is mostly for dropzones.
@@ -390,7 +390,7 @@ namespace SHRestAPI.Controllers
                         throw new ConflictException("Cannot unlock terrain that is sealed or has no input.");
                     }
 
-                    inputSphere.GetTokens().First().Retire(RetirementVFX.None);
+                    inputSphere.Tokens.First().Retire(RetirementVFX.None);
                     var terrainSphere = terrain.Token.Sphere;
                     var infoRecipe = terrain.InfoRecipe;
                     var sphereSpace = terrain.Token.Sphere.TransformWorldPositionToSphereSpace(terrain.GetPositionForUnlockToken());
@@ -442,7 +442,7 @@ namespace SHRestAPI.Controllers
                 }
 
                 var outputResult = (from sphere in situation.GetSpheresByCategory(SphereCategory.Output)
-                                    from token in sphere.GetTokens()
+                                    from token in sphere.Tokens
                                     let json = TokenUtils.TokenToJObject(token)
                                     select json).ToArray();
 
