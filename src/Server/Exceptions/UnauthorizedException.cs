@@ -1,7 +1,5 @@
 namespace SHRestAPI.Server.Exceptions
 {
-    using Ceen;
-
     /// <summary>
     /// Represents an exception that is thrown when an unauthorized operation is attempted.
     /// </summary>

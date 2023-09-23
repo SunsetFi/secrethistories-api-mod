@@ -1,7 +1,5 @@
 namespace SHRestAPI.Server.Exceptions
 {
-    using Ceen;
-
     /// <summary>
     /// Represents an exception that is thrown when the server understands the content type of the request entity,
     /// but is unable to process the contained instructions.

@@ -4,7 +4,6 @@ namespace SHRestAPI.Server
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Ceen;
 
     /// <summary>
     /// A web router that routes requests in the form of <see href="IHttpContext"> objects to <see cref="IWebRoute"/> objects.
@@ -41,22 +40,20 @@ namespace SHRestAPI.Server
         /// <returns>A task for the web request.  Resolves to true if the request was handled, or false if it was not.</returns>
         public async Task<bool> HandleRequest(IHttpContext context)
         {
-            var request = context.Request;
-
             foreach (var route in this.routes)
             {
-                if (request.Method != route.Method)
+                if (context.Method != route.Method)
                 {
                     continue;
                 }
 
-                var pathParameters = this.MatchRoute(request.Path, route.Path);
+                var pathParameters = this.MatchRoute(context.Path, route.Path);
                 if (pathParameters == null)
                 {
                     continue;
                 }
 
-                var routeContext = new WebRouteContext(context, pathParameters);
+                var routeContext = new WebRouteHttpContext(context, pathParameters);
                 await route.OnRequested(routeContext);
                 return true;
             }

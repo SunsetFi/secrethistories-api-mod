@@ -1,7 +1,5 @@
 namespace SHRestAPI.Server.Exceptions
 {
-    using Ceen;
-
     /// <summary>
     /// Represents an exception that is thrown when a method is not allowed.
     /// </summary>

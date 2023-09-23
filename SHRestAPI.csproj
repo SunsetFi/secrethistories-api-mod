@@ -151,6 +151,5 @@
 
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="All" />
-    <PackageReference Include="Ceen.Httpd" Version="0.9.10" />
   </ItemGroup>
 </Project>

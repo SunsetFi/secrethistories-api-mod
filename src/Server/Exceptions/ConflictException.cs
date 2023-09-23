@@ -1,7 +1,5 @@
 namespace SHRestAPI.Server.Exceptions
 {
-    using Ceen;
-
     /// <summary>
     /// Exception for a conflict.
     /// </summary>

@@ -1,7 +1,6 @@
 namespace SHRestAPI.Server.Exceptions
 {
     using System;
-    using Ceen;
 
     /// <summary>
     /// Represents exceptions that are thrown in response to HTTP web requests.

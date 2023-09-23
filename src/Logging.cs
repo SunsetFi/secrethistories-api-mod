@@ -101,7 +101,7 @@ namespace SHRestAPI
             }
 
             sb.Append("\n");
-            foreach (var line in string.Format(message, args).Split("\n"))
+            foreach (var line in string.Format(message, args).Split('\n'))
             {
                 sb.AppendFormat("    {0}\n", line);
             }

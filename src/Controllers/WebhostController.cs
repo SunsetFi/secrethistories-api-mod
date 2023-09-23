@@ -3,9 +3,9 @@ namespace SHRestAPI.Controllers
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Ceen;
     using SecretHistories.Entities;
     using SecretHistories.UI;
+    using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
     using UnityEngine;
@@ -39,8 +39,7 @@ namespace SHRestAPI.Controllers
                 return sprite.ToTexture().EncodeToPNG();
             });
 
-            context.Response.Headers.Add("Content-Type", "image/png");
-            await context.Response.WriteAllAsync(result);
+            await context.SendResponse(HttpStatusCode.OK, "image/png", new MemoryStream(result));
         }
 
         /// <summary>
@@ -143,8 +142,6 @@ namespace SHRestAPI.Controllers
             }
 
             path = Path.GetFullPath(Path.Combine(webhostPath, path));
-
-            Logging.LogInfo($"Normalized path {path}, webhost path {webhostPath}");
 
             if (!path.StartsWith(webhostPath))
             {

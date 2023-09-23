@@ -1,16 +1,15 @@
-namespace SHRestAPI
+namespace SHRestAPI.Server
 {
     using System;
     using System.IO;
     using System.Threading.Tasks;
-    using Ceen;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// Extension methods for the IHTTPContext interface.
     /// </summary>
-    public static class HTTPContextExtensions
+    public static class IHttpContextExtensions
     {
         /// <summary>
         /// Parse the body of the request as a JSON object and deserialize it to the specified type.
@@ -20,8 +19,7 @@ namespace SHRestAPI
         /// <returns>The body of the request deserialized as json.</returns>
         public static T ParseBody<T>(this IHttpContext context)
         {
-            var body = context.Request.Body;
-            var reader = new StreamReader(body, System.Text.Encoding.UTF8);
+            var reader = new StreamReader(context.Body, System.Text.Encoding.UTF8);
             var text = reader.ReadToEnd();
             return JsonConvert.DeserializeObject<T>(text);
         }
@@ -34,8 +32,7 @@ namespace SHRestAPI
         /// <returns>The body of the request deserialized to the specified type.</returns>
         public static object ParseBody(this IHttpContext context, Type type)
         {
-            var body = context.Request.Body;
-            var reader = new StreamReader(body, System.Text.Encoding.UTF8);
+            var reader = new StreamReader(context.Body, System.Text.Encoding.UTF8);
             var text = reader.ReadToEnd();
 
             return JsonConvert.DeserializeObject(text, type);
@@ -48,10 +45,29 @@ namespace SHRestAPI
         /// <returns>The body of the request as a JToken.</returns>
         public static JToken ParseJson(this IHttpContext context)
         {
-            var body = context.Request.Body;
-            var reader = new StreamReader(body, System.Text.Encoding.UTF8);
+            var reader = new StreamReader(context.Body, System.Text.Encoding.UTF8);
             var text = reader.ReadToEnd();
             return JToken.Parse(text);
+        }
+
+        /// <summary>
+        /// Send a response with the specified status code and body.
+        /// </summary>
+        /// <param name="context">The context to which to send the response.</param>
+        /// <param name="statusCode">The HTTP status code of the response.</param>
+        /// <param name="contentType">The content type.</param>
+        /// <param name="body">The body to send.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        public static async Task SendResponse(this IHttpContext context, HttpStatusCode statusCode, string contentType, string body)
+        {
+            using (var stream = new MemoryStream())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(body);
+                writer.Flush();
+                stream.Position = 0;
+                await context.SendResponse(statusCode, contentType, stream);
+            }
         }
 
         /// <summary>
@@ -61,38 +77,29 @@ namespace SHRestAPI
         /// <param name="statusCode">The HTTP status code of the response.</param>
         /// <param name="jsonBody">The object to serialize as JSON and include in the body of the response.</param>
         /// <returns>A Task representing the asynchronous operation.</returns>
-        public static Task SendResponse(this IHttpContext context, HttpStatusCode statusCode, object jsonBody)
+        public static async Task SendResponse(this IHttpContext context, HttpStatusCode statusCode, object jsonBody)
         {
             var jsonText = JsonConvert.SerializeObject(jsonBody, Formatting.Indented);
-            return SendResponse(context, statusCode, "application/json", jsonText);
+            await SendResponse(context, statusCode, "application/json", jsonText);
         }
 
         /// <summary>
-        /// Send a response with the specified status code, content type, and body.
+        /// Attempts to send the response.
         /// </summary>
         /// <param name="context">The context to which to send the response.</param>
         /// <param name="statusCode">The HTTP status code of the response.</param>
-        /// <param name="contentType">The MIME type of the response's content.</param>
-        /// <param name="body">The content to include in the body of the response.</param>
+        /// <param name="jsonBody">The object to serialize as JSON and include in the body of the response.</param>
         /// <returns>A Task representing the asynchronous operation.</returns>
-        public static async Task SendResponse(this IHttpContext context, HttpStatusCode statusCode, string contentType = null, string body = null)
+        public static async Task<bool> TrySendResponse(this IHttpContext context, HttpStatusCode statusCode, object jsonBody)
         {
-            var response = context.Response;
-
-            response.StatusCode = statusCode;
-
-            if (contentType != null)
+            try
             {
-                response.Headers.Add("Content-Type", contentType);
+                await SendResponse(context, statusCode, jsonBody);
+                return true;
             }
-
-            if (contentType == "application/json")
+            catch (Exception)
             {
-                await response.WriteAllJsonAsync(body);
-            }
-            else if (body != null)
-            {
-                await response.WriteAllAsync(body, contentType);
+                return false;
             }
         }
 
@@ -105,12 +112,7 @@ namespace SHRestAPI
         public static async Task SendFileResponse(this IHttpContext context, string path)
         {
             var mimeType = MimeMapper.GetMimeType(Path.GetExtension(path));
-            var response = context.Response;
-
-            response.StatusCode = HttpStatusCode.OK;
-            response.Headers.Add("Content-Type", mimeType);
-
-            await response.WriteAllAsync(File.ReadAllBytes(path), mimeType);
+            await context.SendResponse(HttpStatusCode.OK, mimeType, new MemoryStream(File.ReadAllBytes(path)));
         }
     }
 }

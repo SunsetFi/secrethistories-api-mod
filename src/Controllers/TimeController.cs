@@ -3,7 +3,6 @@ namespace SHRestAPI.Controllers
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using Ceen;
     using SecretHistories.Constants;
     using SecretHistories.Entities;
 #if BH
@@ -14,6 +13,7 @@ namespace SHRestAPI.Controllers
 #endif
     using SecretHistories.UI;
     using SHRestAPI.Payloads;
+    using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
 
@@ -32,9 +32,6 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "speed")]
         public async Task GetSpeed(IHttpContext context)
         {
-            var request = context.Request;
-            var response = context.Response;
-
             var speed = await Dispatcher.RunOnMainThread(() => Watchman.Get<Heart>().GetEffectiveGameSpeed().ToString());
             await context.SendResponse(HttpStatusCode.OK, new { speed });
         }

@@ -1,7 +1,5 @@
 namespace SHRestAPI.Server.Exceptions
 {
-    using Ceen;
-
     /// <summary>
     /// Represents an exception that is thrown when a requested resource is not found.
     /// </summary>

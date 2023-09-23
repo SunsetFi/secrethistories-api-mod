@@ -5,22 +5,24 @@ namespace SHRestAPI.Server
     using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
-    using Ceen;
-    using Ceen.Httpd;
+    using SHRestAPI.Payloads;
+    using SHRestAPI.Server.Exceptions;
 
     /// <summary>
     /// A web server for receiving HTTP requests.
     /// </summary>
     public class WebServer : IDisposable
     {
-        private readonly HttpHandlerDelegate requestHandler;
-        private CancellationTokenSource cancellationTokenSource;
+        private readonly Func<IHttpContext, Task<bool>> requestHandler;
+
+        private HttpListener listener;
+        private Thread listenerThread;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebServer"/> class.
         /// </summary>
         /// <param name="requestHandler">The web request handler to use.</param>
-        public WebServer(HttpHandlerDelegate requestHandler)
+        public WebServer(Func<IHttpContext, Task<bool>> requestHandler)
         {
             this.requestHandler = requestHandler;
         }
@@ -31,23 +33,20 @@ namespace SHRestAPI.Server
         /// <param name="port">The port to listen on.</param>
         public void Start(int port)
         {
+            if (this.listener != null)
+            {
+                throw new InvalidOperationException("Server already started.");
+            }
+
             Logging.LogTrace("Starting web server");
 
-            var tcs = new CancellationTokenSource();
-            var config = new ServerConfig()
-                .AddLogger(this.OnLogMessage)
-                .AddRoute(this.OnRequest);
-            config.MaxActiveRequests = 200;
-            config.SocketBacklog = 200;
-            config.KeepAliveMaxRequests = 200;
-            config.KeepAliveTimeoutSeconds = 10;
+            this.listener = new HttpListener();
+            this.listener.Prefixes.Add($"http://*:{port}/");
+            this.listener.AuthenticationSchemes = AuthenticationSchemes.None;
+            this.listener.Start();
 
-            this.cancellationTokenSource = new CancellationTokenSource();
-            HttpServer.ListenAsync(
-                new IPEndPoint(IPAddress.Any, port),
-                false,
-                config,
-                this.cancellationTokenSource.Token);
+            this.listenerThread = new Thread(this.Listen);
+            this.listenerThread.Start();
 
             Logging.LogInfo($"Server started on port {port}");
         }
@@ -57,61 +56,100 @@ namespace SHRestAPI.Server
         /// </summary>
         public void Dispose()
         {
-            this.cancellationTokenSource.Cancel();
+            this.listener.Stop();
+            this.listenerThread.Abort();
             Logging.LogTrace("Server stopped");
         }
 
-        private async Task<bool> OnRequest(IHttpContext context)
+        private async void Listen()
         {
+            while (true)
+            {
+                var context = await this.listener.GetContextAsync();
+                try
+                {
+                    await this.OnRequest(context);
+                }
+                catch (Exception e)
+                {
+                    Logging.LogInfo($"Failed request: {context.Request.HttpMethod} {context.Request.Url.LocalPath}, {e}");
+                }
+            }
+        }
+
+        private async Task OnRequest(HttpListenerContext context)
+        {
+            if (context.Request.IsWebSocketRequest)
+            {
+                var webSocketContext = await context.AcceptWebSocketAsync(null);
+                await webSocketContext.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes("Hello World"), System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
+                await webSocketContext.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
+                return;
+            }
+
+            // Need to get this ahead of time as we loose access to it when the context is disposed.
+            var remoteEndPoint = context.Request.RemoteEndPoint.ToString();
+
+            var httpContext = new HttpListenerHttpContext(context);
             try
             {
-                return await this.requestHandler(context);
+                var handled = await this.requestHandler(httpContext);
+                if (!handled)
+                {
+                    throw new NotFoundException();
+                }
             }
             catch (Exception e)
             {
                 var webException = e.GetInnerException<Exceptions.WebException>();
                 if (webException != null)
                 {
-                    await context.SendResponse(webException.StatusCode, "text/plain", webException.Message);
-                    return true;
-                }
-
-                throw;
-            }
-        }
-
-        private async Task OnLogMessage(IHttpContext context, Exception exception, DateTime started, TimeSpan duration)
-        {
-            if (exception != null)
-            {
-                await Dispatcher.RunOnMainThread(() =>
-                {
-                    var aggregateException = exception as AggregateException;
-                    if (aggregateException != null)
-                    {
-                        foreach (var ex in aggregateException.InnerExceptions)
+                    Logging.LogError(
+                        new Dictionary<string, string>()
                         {
-                            this.LogException(ex, context);
-                        }
-                    }
-                    else
-                    {
-                        this.LogException(exception, context);
-                    }
-                });
-            }
-        }
+                        { "RequestMethod", httpContext.Method },
+                        { "RequestPath", httpContext.Path },
+                        { "StatusCode", webException.StatusCode.ToString() },
+                        { "RemoteEndpoint", remoteEndPoint },
+                        }, $"Failed to handle request: {webException.Message}\n{webException.StackTrace}");
 
-        private void LogException(Exception exception, IHttpContext context)
-        {
-            Logging.LogError(
-                new Dictionary<string, string>()
+                    await httpContext.TrySendResponse(webException.StatusCode, new ErrorPayload
+                    {
+                        Message = webException.Message,
+                    });
+                }
+                else
                 {
-                    { "RequestMethod", context.Request.Method },
-                    { "RequestPath", context.Request.Path },
-                    { "RemoteEndpoint", context.Request.RemoteEndPoint.ToString() },
-                },
-                exception.ToString());
+                    var unwrapped = e.GetInnerException<Exception>() ?? e;
+                    Logging.LogError(
+                        new Dictionary<string, string>()
+                        {
+                        { "RequestMethod", httpContext.Method },
+                        { "RequestPath", httpContext.Path },
+                        { "RemoteEndpoint", remoteEndPoint },
+                        }, $"Failed to handle request: {unwrapped}\n{unwrapped.StackTrace}");
+
+                    await httpContext.TrySendResponse(HttpStatusCode.InternalServerError, new ErrorPayload
+                    {
+                        Message = unwrapped.Message,
+                    });
+                }
+            }
+            finally
+            {
+                // TODO: We don't know whether the websocket was upgraded or not.
+                if (!context.Request.IsWebSocketRequest)
+                {
+                    try
+                    {
+                        context.Response.Close();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // This is fine, it just means the connection was already handled.
+                    }
+                }
+            }
         }
     }
 }

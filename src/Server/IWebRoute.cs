@@ -22,6 +22,6 @@ namespace SHRestAPI.Server
         /// </summary>
         /// <param name="context">The request context.</param>
         /// <returns>A task to be completed when the request is handled.</returns>
-        Task OnRequested(IWebRouteContext context);
+        Task OnRequested(IWebRouteHttpContext context);
     }
 }

@@ -13,7 +13,7 @@ namespace SHRestAPI.Server.Attributes
         ///  Initializes a new instance of the <see cref="WebMiddlewareAttribute"/> class.
         /// </summary>
         /// <param name="handler">The function to implement the middleware.</param>
-        public WebMiddlewareAttribute(Func<IWebRouteContext, Task<bool>> handler)
+        public WebMiddlewareAttribute(Func<IHttpContext, Task<bool>> handler)
         {
             this.Handler = handler;
         }
@@ -21,6 +21,6 @@ namespace SHRestAPI.Server.Attributes
         /// <summary>
         /// Gets the handler for the middleware.
         /// </summary>
-        public Func<IWebRouteContext, Task<bool>> Handler { get; private set; }
+        public Func<IHttpContext, Task<bool>> Handler { get; private set; }
     }
 }

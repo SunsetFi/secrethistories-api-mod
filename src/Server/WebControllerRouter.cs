@@ -15,7 +15,7 @@ namespace SHRestAPI.Server
     {
         private object instance;
         private MethodBase handler;
-        private Func<IWebRouteContext, Task<bool>>[] middleware;
+        private Func<IHttpContext, Task<bool>>[] middleware;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebControllerRouter"/> class.
@@ -48,7 +48,7 @@ namespace SHRestAPI.Server
         public string Path { get; private set; }
 
         /// <inheritdoc/>
-        public async Task OnRequested(IWebRouteContext context)
+        public async Task OnRequested(IWebRouteHttpContext context)
         {
             foreach (var middleware in this.middleware)
             {
@@ -64,16 +64,12 @@ namespace SHRestAPI.Server
             await (Task)this.handler.Invoke(this.instance, paramValues);
         }
 
-        private object GetParameterValue(ParameterInfo parameterInfo, IWebRouteContext context)
+        private object GetParameterValue(ParameterInfo parameterInfo, IWebRouteHttpContext context)
         {
             switch (parameterInfo.Name)
             {
                 case "context":
                     return context;
-                case "request":
-                    return context.Request;
-                case "response":
-                    return context.Response;
                 case "body":
                     {
                         try

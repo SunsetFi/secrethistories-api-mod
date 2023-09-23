@@ -1,11 +1,12 @@
 namespace SHRestAPI.Controllers
 {
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Ceen;
     using SecretHistories.Entities;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
+    using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
     using UnityEngine;
@@ -26,8 +27,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "elements")]
         public async Task GetElements(IHttpContext context)
         {
-            bool? isAspect = context.Request.QueryString.ContainsKey("isAspect") ? bool.Parse(context.Request.QueryString["isAspect"]) : null;
-            bool? isHidden = context.Request.QueryString.ContainsKey("isHidden") ? bool.Parse(context.Request.QueryString["isHidden"]) : null;
+            bool? isAspect = context.QueryString.ContainsKey("isAspect") ? bool.Parse(context.QueryString["isAspect"]) : null;
+            bool? isHidden = context.QueryString.ContainsKey("isHidden") ? bool.Parse(context.QueryString["isHidden"]) : null;
             var result = await Dispatcher.RunOnMainThread(() =>
             {
                 var elements = this.Compendium.GetEntitiesAsList<Element>();
@@ -84,8 +85,7 @@ namespace SHRestAPI.Controllers
                 return sprite.ToTexture().EncodeToPNG();
             });
 
-            context.Response.Headers.Add("Content-Type", "image/png");
-            await context.Response.WriteAllAsync(result);
+            await context.SendResponse(HttpStatusCode.OK, "image/png", new MemoryStream(result));
         }
 
         /// <summary>
@@ -150,8 +150,7 @@ namespace SHRestAPI.Controllers
                 return sprite.ToTexture().EncodeToPNG();
             });
 
-            context.Response.Headers.Add("Content-Type", "image/png");
-            await context.Response.WriteAllAsync(result);
+            await context.SendResponse(HttpStatusCode.OK, "image/png", new MemoryStream(result));
         }
 
         /// <summary>

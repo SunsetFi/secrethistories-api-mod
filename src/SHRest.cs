@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Ceen;
 using SHRestAPI;
 using SHRestAPI.JsonTranslation;
-using SHRestAPI.Payloads;
 using SHRestAPI.Server;
 using SHRestAPI.Server.Attributes;
-using SHRestAPI.Server.Exceptions;
 using UnityEngine;
 
 /// <summary>
@@ -124,62 +120,23 @@ public class SHRest : MonoBehaviour
 
     private async Task<bool> OnRequest(IHttpContext context)
     {
-        if (context.Request.Method == "OPTIONS")
+        if (context.Method == "OPTIONS")
         {
             // For a proper implementation of CORS, see https://github.com/expressjs/cors/blob/master/lib/index.js#L159
-            context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+            context.SetHeader("Access-Control-Allow-Origin", "*");
 
             // TODO: Choose based on available routes at this path
-            context.Response.AddHeader("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
-            context.Response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
-            context.Response.AddHeader("Access-Control-Max-Age", "1728000");
-            context.Response.StatusCode = HttpStatusCode.NoContent;
-            context.Response.Headers["Content-Length"] = "0";
+            context.SetHeader("Access-Control-Allow-Methods", "GET, PUT, PATCH, POST, DELETE");
+            context.SetHeader("Access-Control-Allow-Headers", "Content-Type");
+            context.SetHeader("Access-Control-Max-Age", "1728000");
+            await context.SendResponse(HttpStatusCode.NoContent);
             return true;
         }
         else
         {
-            context.Response.AddHeader("Access-Control-Allow-Origin", "*");
+            context.SetHeader("Access-Control-Allow-Origin", "*");
         }
 
-        try
-        {
-            return await this.router.HandleRequest(context);
-        }
-        catch (Exception e)
-        {
-            var webException = e.GetInnerException<WebException>();
-            if (webException != null)
-            {
-                Logging.LogError(
-                    new Dictionary<string, string>()
-                    {
-                        { "METHOD", context.Request.Method },
-                        { "PATH", context.Request.Path },
-                        { "STATUS", webException.StatusCode.ToString() },
-                    }, $"Failed to handle request: {webException.Message}\n{webException.StackTrace}");
-
-                await context.SendResponse(webException.StatusCode, new ErrorPayload
-                {
-                    Message = webException.Message,
-                });
-            }
-            else
-            {
-                Logging.LogError(
-                    new Dictionary<string, string>()
-                    {
-                    { "METHOD", context.Request.Method },
-                    { "PATH", context.Request.Path },
-                    }, $"Failed to handle request: {e}\n{e.StackTrace}");
-
-                await context.SendResponse(HttpStatusCode.InternalServerError, new ErrorPayload
-                {
-                    Message = e.Message,
-                });
-            }
-
-            return true;
-        }
+        return await this.router.HandleRequest(context);
     }
 }

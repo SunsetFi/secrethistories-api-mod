@@ -1,9 +1,9 @@
 namespace SHRestAPI.Controllers
 {
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Ceen;
     using Newtonsoft.Json.Linq;
 #if BH
     using SecretHistories.Commands;
@@ -18,6 +18,7 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.JsonTranslation;
 #if BH
     using SHRestAPI.Payloads;
+    using SHRestAPI.Server;
 #endif
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
@@ -145,8 +146,7 @@ namespace SHRestAPI.Controllers
                 return sprite.ToTexture().EncodeToPNG();
             });
 
-            context.Response.Headers.Add("Content-Type", "image/png");
-            await context.Response.WriteAllAsync(result);
+            await context.SendResponse(HttpStatusCode.OK, "image/png", new MemoryStream(result));
         }
 
         /// <summary>
@@ -180,8 +180,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/tokens")]
         public async Task GetTokensAtPath(IHttpContext context, string path)
         {
-            context.Request.QueryString.TryGetValue("payloadType", out var payloadType);
-            context.Request.QueryString.TryGetValue("entityId", out var entityId);
+            context.QueryString.TryGetValue("payloadType", out var payloadType);
+            context.QueryString.TryGetValue("entityId", out var entityId);
 
             var items = await Dispatcher.RunOnMainThread(() =>
             {

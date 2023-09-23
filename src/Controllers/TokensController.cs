@@ -3,9 +3,9 @@ namespace SHRestAPI.Controllers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Ceen;
     using SecretHistories.Entities;
     using SecretHistories.UI;
+    using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
 
     /// <summary>
@@ -22,21 +22,21 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET")]
         public async Task GetAllTokens(IHttpContext context)
         {
-            context.Request.QueryString.TryGetValue("skip", out var skipStr);
+            context.QueryString.TryGetValue("skip", out var skipStr);
             int.TryParse(skipStr, out var skip);
-            context.Request.QueryString.TryGetValue("limit", out var limitStr);
+            context.QueryString.TryGetValue("limit", out var limitStr);
             int.TryParse(limitStr, out var limit);
 
-            context.Request.QueryString.TryGetValue("spherePrefix", out var spherePrefix);
+            context.QueryString.TryGetValue("spherePrefix", out var spherePrefix);
             string[] spheres = string.IsNullOrEmpty(spherePrefix) ? new string[0] : spherePrefix.Split(",");
 
-            context.Request.QueryString.TryGetValue("payloadType", out var payloadType);
+            context.QueryString.TryGetValue("payloadType", out var payloadType);
             string[] payloadTypes = string.IsNullOrEmpty(payloadType) ? new string[0] : payloadType.Split(",");
 
-            context.Request.QueryString.TryGetValue("elementId", out var elementId);
+            context.QueryString.TryGetValue("elementId", out var elementId);
             string[] elementIds = string.IsNullOrEmpty(elementId) ? new string[0] : elementId.Split(",");
 
-            context.Request.QueryString.TryGetValue("verbId", out var verbId);
+            context.QueryString.TryGetValue("verbId", out var verbId);
             string[] verbIds = string.IsNullOrEmpty(verbId) ? new string[0] : verbId.Split(",");
 
             var result = await Dispatcher.RunOnMainThread(() =>
