@@ -19,6 +19,12 @@ namespace SHRestAPI.Payloads
             return recipe.Id;
         }
 
+        [JsonPropertyGetter("actionId")]
+        public string GetActionId(Recipe recipe)
+        {
+            return recipe.ActionId;
+        }
+
         [JsonPropertyGetter("label")]
         public string GetLabel(Recipe recipe)
         {
