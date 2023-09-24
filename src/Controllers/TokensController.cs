@@ -2,7 +2,6 @@ namespace SHRestAPI.Controllers
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using SecretHistories.Entities;
     using SecretHistories.UI;
@@ -40,34 +39,30 @@ namespace SHRestAPI.Controllers
             context.QueryString.TryGetValue("verbId", out var verbId);
             string[] verbIds = string.IsNullOrEmpty(verbId) ? new string[0] : verbId.Split(",");
 
-            // DANGEROUS: Trying to do everything on another thread.  This is a bad idea, but I want to see if it works.
-
-            // var result = await Dispatcher.RunOnMainThread(() =>
-            // {
-            IEnumerable<Token> query = from token in TokenUtils.GetAllTokens()
-                                       where spheres.Length == 0 || spheres.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))
-                                       where payloadTypes.Length == 0 || payloadTypes.Any(type => token.PayloadTypeName == type)
-                                       where elementIds.Length == 0 || (token.Payload is ElementStack elementStack && elementIds.Any(id => elementStack.Element.Id == id))
-                                       where verbIds.Length == 0 || (token.Payload is Situation situation && verbIds.Any(id => situation.Verb.Id == id))
-                                       orderby token.PayloadId
-                                       select token;
-
-            if (skip > 0)
+            var result = await Dispatcher.DispatchRead(() =>
             {
-                query = query.Skip(skip);
-            }
+                IEnumerable<Token> query = from token in TokenUtils.GetAllTokens()
+                                           where spheres.Length == 0 || spheres.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))
+                                           where payloadTypes.Length == 0 || payloadTypes.Any(type => token.PayloadTypeName == type)
+                                           where elementIds.Length == 0 || (token.Payload is ElementStack elementStack && elementIds.Any(id => elementStack.Element.Id == id))
+                                           where verbIds.Length == 0 || (token.Payload is Situation situation && verbIds.Any(id => situation.Verb.Id == id))
+                                           orderby token.PayloadId
+                                           select token;
 
-            if (limit > 0)
-            {
-                query = query.Take(limit);
-            }
+                if (skip > 0)
+                {
+                    query = query.Skip(skip);
+                }
 
-            var result = query.ToArray();
-            // });
+                if (limit > 0)
+                {
+                    query = query.Take(limit);
+                }
 
-            // JObjectifying out here is risky, but I want to reduce the time spent locking the main thread.
-            // FIXME: On further investigation, our result is completed even when we dont await anything.  Are we even running on a different thread?
-            await context.SendResponse(HttpStatusCode.OK, result.Select(TokenUtils.TokenToJObject).ToArray());
+                return query.Select(TokenUtils.TokenToJObject).ToArray();
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
         }
     }
 }
