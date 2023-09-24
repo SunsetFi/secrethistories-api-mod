@@ -27,7 +27,7 @@ namespace SHRestAPI.Controllers
         public async Task GetFavIcon(IHttpContext context)
         {
             // TODO: We really want an ICO here as that is what everything uses by default.
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchGraphicsRead(() =>
             {
                 var element = Watchman.Get<Compendium>().GetEntityById<Element>(this.favIconElement);
                 if (element == null || !element.IsValid())

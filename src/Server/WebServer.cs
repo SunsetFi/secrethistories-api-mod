@@ -66,26 +66,27 @@ namespace SHRestAPI.Server
             while (true)
             {
                 var context = await this.listener.GetContextAsync();
+                this.HandleRequest(context);
+            }
+        }
+
+        private void HandleRequest(HttpListenerContext context)
+        {
+            Task.Run(async () =>
+            {
                 try
                 {
                     await this.OnRequest(context);
                 }
                 catch (Exception e)
                 {
-                    Logging.LogInfo($"Failed request: {context.Request.HttpMethod} {context.Request.Url.LocalPath}, {e}");
+                    Logging.LogError($"Failed to handle request: {e}");
                 }
-            }
+            });
         }
 
         private async Task OnRequest(HttpListenerContext context)
         {
-            if (context.Request.IsWebSocketRequest)
-            {
-                var webSocketContext = await context.AcceptWebSocketAsync(null);
-                await webSocketContext.WebSocket.SendAsync(System.Text.Encoding.UTF8.GetBytes("Hello World"), System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
-                await webSocketContext.WebSocket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Done", CancellationToken.None);
-                return;
-            }
 
             // Need to get this ahead of time as we loose access to it when the context is disposed.
             var remoteEndPoint = context.Request.RemoteEndPoint.ToString();

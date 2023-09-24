@@ -27,7 +27,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET")]
         public async Task GetGameState(IHttpContext context)
         {
-            var gameState = await Dispatcher.RunOnMainThread(() =>
+            var gameState = await Dispatcher.DispatchRead(() =>
             {
                 var persistenceProvider = new DefaultGamePersistenceProvider();
                 persistenceProvider.Encaust(Watchman.Get<Stable>(), FucineRoot.Get(), Watchman.Get<Xamanek>());
@@ -53,7 +53,7 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<HydrateGameStatePayload>();
             payload.Validate();
 
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 var stageHand = Watchman.Get<StageHand>();
 
@@ -80,23 +80,20 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "legacy")]
         public async Task GetLegacy(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
-                string legacyId = null;
-                string legacyLabel = null;
                 var stageHand = Watchman.Get<StageHand>();
                 if (stageHand.SceneIsActive(Constants.GameScene))
                 {
                     var protag = Watchman.Get<Stable>().Protag();
-                    legacyId = protag.ActiveLegacy.Id;
-                    legacyLabel = protag.ActiveLegacy.Label;
+                    return new
+                    {
+                        legacyId = protag.ActiveLegacy.Id,
+                        legacyLabel = protag.ActiveLegacy.Label,
+                    };
                 }
 
-                return new
-                {
-                    legacyId,
-                    legacyLabel,
-                };
+                return null;
             });
 
             await context.SendResponse(HttpStatusCode.OK, result);
@@ -113,7 +110,7 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<StartNewLegacyPayload>();
             payload.Validate();
 
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 var provider = new FreshGameProvider(payload.Legacy);
                 var stageHand = Watchman.Get<StageHand>();

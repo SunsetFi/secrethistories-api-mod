@@ -32,7 +32,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "speed")]
         public async Task GetSpeed(IHttpContext context)
         {
-            var speed = await Dispatcher.RunOnMainThread(() =>
+            var speed = await Dispatcher.DispatchRead(() =>
                 {
                     var heart = Watchman.Get<Heart>();
                     if (!heart)
@@ -57,7 +57,7 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<SetSpeedPayload>();
             payload.Validate();
 
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 if (payload.GameSpeed == SecretHistories.Enums.GameSpeed.Paused)
                 {
@@ -94,7 +94,7 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<PassTimePayload>();
             payload.Validate();
 
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 var heart = Watchman.Get<Heart>();
                 heart.Beat(payload.Seconds, 0);
@@ -113,7 +113,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "events")]
         public async Task GetNextEvents(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 return new
                 {
@@ -138,7 +138,7 @@ namespace SHRestAPI.Controllers
 
             float timeToBeat = 0f;
 
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 if (payload.Event == "CardDecay")
                 {

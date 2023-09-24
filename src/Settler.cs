@@ -46,7 +46,7 @@ namespace SHRestAPI
         private static Task<bool> IsSettled()
         {
             // This is kinda hackish.  Autoccultist has a more involved but significantly better way of handling threading.
-            return Dispatcher.RunOnMainThread(() =>
+            return Dispatcher.DispatchRead(() =>
             {
                 var xamanek = Watchman.Get<Xamanek>();
                 if (xamanek == null)
@@ -61,7 +61,7 @@ namespace SHRestAPI
 
         private static Task<bool> IsGameStarted()
         {
-            return Dispatcher.RunOnMainThread(() =>
+            return Dispatcher.DispatchRead(() =>
             {
                 return SceneManager.GetSceneByName(Constants.GameScene).isLoaded;
             });

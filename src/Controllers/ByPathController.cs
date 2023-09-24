@@ -39,7 +39,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "~/spheres")]
         public async Task GetSpheresAtRoot(IHttpContext context)
         {
-            var items = await Dispatcher.RunOnMainThread(() =>
+            var items = await Dispatcher.DispatchRead(() =>
                 (from sphere in FucineRoot.Get().GetSpheres()
                  let json = JsonTranslator.ObjectToJson(sphere)
                  select json).ToArray());
@@ -56,7 +56,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path")]
         public async Task GetItemAtPath(IHttpContext context, string path)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => TokenUtils.TokenToJObject(token),
@@ -77,7 +77,7 @@ namespace SHRestAPI.Controllers
         {
             var body = context.ParseBody<JObject>();
 
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchWrite(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token =>
@@ -102,7 +102,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "DELETE", Path = "**path")]
         public async Task DeleteItemAtPath(IHttpContext context, string path)
         {
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => token.Retire(),
@@ -123,7 +123,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/icon.png")]
         public async Task GetPathIcon(IHttpContext context, string path)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchGraphicsRead(() =>
             {
                 var sprite = this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token =>
@@ -158,7 +158,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/spheres")]
         public async Task GetSpheresAtPath(IHttpContext context, string path)
         {
-            var items = await Dispatcher.RunOnMainThread(() =>
+            var items = await Dispatcher.DispatchRead(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => from child in token.Payload.GetSpheres()
@@ -183,7 +183,7 @@ namespace SHRestAPI.Controllers
             context.QueryString.TryGetValue("payloadType", out var payloadType);
             context.QueryString.TryGetValue("entityId", out var entityId);
 
-            var items = await Dispatcher.RunOnMainThread(() =>
+            var items = await Dispatcher.DispatchRead(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => throw new BadRequestException("Cannot get tokens of a token."),
@@ -209,7 +209,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/tokens")]
         public async Task CreateTokenAtPath(IHttpContext context, string path)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchWrite(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
                     token => throw new BadRequestException("Cannot create tokens in a token."),
@@ -282,7 +282,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/focus")]
         public async Task FocusItemAtPath(IHttpContext context, string path)
         {
-            await Dispatcher.RunOnMainThread(async () =>
+            await Dispatcher.DispatchWrite(async () =>
             {
                 var token = this.WebSafeParse(path).GetToken();
                 if (token == null)
@@ -306,7 +306,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/open")]
         public async Task OpenItemAtPath(IHttpContext context, string path)
         {
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
                 if (token == null)
@@ -350,7 +350,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/execute")]
         public async Task ExecuteSituationAtPath(IHttpContext context, string path)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchWrite(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
                 if (token == null)
@@ -428,7 +428,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/conclude")]
         public async Task ConcludeSituationAtPath(IHttpContext context, string path)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchWrite(() =>
             {
                 var situation = this.WebSafeParse(path).GetPayload<Situation>();
                 if (situation == null)
@@ -467,7 +467,7 @@ namespace SHRestAPI.Controllers
         public async Task UnlockTerrainAtPath(IHttpContext context, string path)
         {
             var payload = context.ParseBody<MaybeInstantPayload>();
-            await Dispatcher.RunOnMainThread(() =>
+            await Dispatcher.DispatchWrite(() =>
             {
                 var terrain = this.WebSafeParse(path).GetPayload<ConnectedTerrain>();
                 if (terrain == null)

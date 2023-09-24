@@ -67,7 +67,7 @@ namespace SHRestAPI
 
         private static async Task<Tuple<int, T>> GetValue<T>(Func<T> poll, Func<T, int> computeHash)
         {
-            var value = await Dispatcher.RunOnMainThread(poll);
+            var value = await Dispatcher.DispatchRead(poll);
             var valueHash = computeHash != null ? computeHash(value) : value.GetHashCode();
             return new Tuple<int, T>(valueHash, value);
         }

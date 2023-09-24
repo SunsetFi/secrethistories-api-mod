@@ -21,44 +21,47 @@ namespace SHRestAPI
         private static List<QueuedTask> actions = new List<QueuedTask>(8);
 
         /// <summary>
-        /// Run the action on the main thread.
+        /// Dispatches a read operation.
         /// </summary>
-        /// <param name="action">The action to run.</param>
-        /// <returns>A task that completes when the action has finished.</returns>
-        public static Task RunOnMainThread(Action action)
+        /// <typeparam name="T">The return type.</typeparam>
+        /// <param name="function">The function to dispatch.</param>
+        /// <returns>The return value.</returns>
+        public static Task<T> DispatchRead<T>(Func<T> function)
         {
-            return RunOnMainThread<object>(() =>
-            {
-                action();
-                return null;
-            });
+            // This might be dangerous, but nothing bad seems to have happened yet.
+            return Task.FromResult(function());
         }
 
         /// <summary>
-        /// Run the function on the main thread.
+        /// Dispatches a read operation that uses graphics.
         /// </summary>
-        /// <typeparam name="T">The return type of the function.</typeparam>
-        /// <param name="function">The function to run.</param>
-        /// <returns>A task that resolves to the return value of the function.</returns>
-        public static Task<T> RunOnMainThread<T>(Func<T> function)
+        /// <typeparam name="T">The return type.</typeparam>
+        /// <param name="function">The function to dispatch.</param>
+        /// <returns>The return value.</returns>
+        public static Task<T> DispatchGraphicsRead<T>(Func<T> function)
         {
-            var source = new TaskCompletionSource<object>();
-            var queueItem = new QueuedTask()
-            {
-                Function = () => function(),
-                CompletionSource = source,
-            };
+            return RunOnMainThread(function);
+        }
 
-            lock (backlog)
-            {
-                backlog.Add(queueItem);
-                queued = true;
-            }
+        /// <summary>
+        /// Dispatches a write operation.
+        /// </summary>
+        /// <typeparam name="T">The return type.</typeparam>
+        /// <param name="function">The function to dispatch.</param>
+        /// <returns>The return value.</returns>
+        public static Task<T> DispatchWrite<T>(Func<T> function)
+        {
+            return RunOnMainThread(function);
+        }
 
-            // Sigh...
-            // FIXME: I think our tasks are continuing on the main thread.
-            // Might need a ConfigureAwait here.
-            return source.Task.ContinueWith(t => (T)t.Result);
+        /// <summary>
+        /// Dispatches a write operation.
+        /// </summary>
+        /// <param name="function">The function to dispatch.</param>
+        /// <returns>The task.</returns>
+        public static Task DispatchWrite(Action function)
+        {
+            return RunOnMainThread(function);
         }
 
         /// <summary>
@@ -107,6 +110,47 @@ namespace SHRestAPI
 
                 actions.Clear();
             }
+        }
+
+        /// <summary>
+        /// Run the action on the main thread.
+        /// </summary>
+        /// <param name="action">The action to run.</param>
+        /// <returns>A task that completes when the action has finished.</returns>
+        private static Task RunOnMainThread(Action action)
+        {
+            return RunOnMainThread<object>(() =>
+            {
+                action();
+                return null;
+            });
+        }
+
+        /// <summary>
+        /// Run the function on the main thread.
+        /// </summary>
+        /// <typeparam name="T">The return type of the function.</typeparam>
+        /// <param name="function">The function to run.</param>
+        /// <returns>A task that resolves to the return value of the function.</returns>
+        private static Task<T> RunOnMainThread<T>(Func<T> function)
+        {
+            var source = new TaskCompletionSource<object>();
+            var queueItem = new QueuedTask()
+            {
+                Function = () => function(),
+                CompletionSource = source,
+            };
+
+            lock (backlog)
+            {
+                backlog.Add(queueItem);
+                queued = true;
+            }
+
+            // Sigh...
+            // FIXME: I think our tasks are continuing on the main thread.
+            // Might need a ConfigureAwait here.
+            return source.Task.ContinueWith(t => (T)t.Result);
         }
 
         private void OnDestroy()

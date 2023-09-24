@@ -29,7 +29,7 @@ namespace SHRestAPI.Controllers
         {
             bool? isAspect = context.QueryString.ContainsKey("isAspect") ? bool.Parse(context.QueryString["isAspect"]) : null;
             bool? isHidden = context.QueryString.ContainsKey("isHidden") ? bool.Parse(context.QueryString["isHidden"]) : null;
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var elements = this.Compendium.GetEntitiesAsList<Element>();
                 return from element in elements
@@ -50,7 +50,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "elements/:elementId")]
         public async Task GetElement(IHttpContext context, string elementId)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var element = this.Compendium.GetEntityById<Element>(elementId);
                 if (element == null || !element.IsValid())
@@ -73,7 +73,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "elements/:elementId/icon.png")]
         public async Task GetElementIcon(IHttpContext context, string elementId)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchGraphicsRead(() =>
             {
                 var element = this.Compendium.GetEntityById<Element>(elementId);
                 if (element == null || !element.IsValid())
@@ -96,7 +96,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "verbs")]
         public async Task GetVerbs(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var verbs = this.Compendium.GetEntitiesAsList<Verb>();
                 return from verb in verbs
@@ -115,7 +115,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "verbs/:verbId")]
         public async Task GetVerb(IHttpContext context, string verbId)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var verb = this.Compendium.GetEntityById<Verb>(verbId);
                 if (verb == null || !verb.IsValid())
@@ -138,7 +138,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "verbs/:verbId/icon.png")]
         public async Task GetVerbIcon(IHttpContext context, string verbId)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchGraphicsRead(() =>
             {
                 var verb = this.Compendium.GetEntityById<Verb>(verbId);
                 if (verb == null || !verb.IsValid())
@@ -161,7 +161,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "recipes")]
         public async Task GetRecipes(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var recipes = this.Compendium.GetEntitiesAsList<Recipe>();
                 return from recipe in recipes
@@ -180,7 +180,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "recipes/:recipeId")]
         public async Task GetRecipe(IHttpContext context, string recipeId)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var recipe = this.Compendium.GetEntityById<Recipe>(recipeId);
                 if (recipe == null || !recipe.IsValid())

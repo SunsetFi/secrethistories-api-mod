@@ -23,24 +23,21 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "legacy")]
         public async Task GetLegacy(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
-            {
-                string legacyId = null;
-                string legacyLabel = null;
-                var stageHand = Watchman.Get<StageHand>();
-                if (stageHand.SceneIsActive(Constants.GameScene))
-                {
-                    var protag = Watchman.Get<Stable>().Protag();
-                    legacyId = protag.ActiveLegacy.Id;
-                    legacyLabel = protag.ActiveLegacy.Label;
-                }
+            var result = await Dispatcher.DispatchRead(() =>
+                        {
+                            var stageHand = Watchman.Get<StageHand>();
+                            if (stageHand.SceneIsActive(Constants.GameScene))
+                            {
+                                var protag = Watchman.Get<Stable>().Protag();
+                                return new
+                                {
+                                    legacyId = protag.ActiveLegacy.Id,
+                                    legacyLabel = protag.ActiveLegacy.Label,
+                                };
+                            }
 
-                return new LegacyPayload
-                {
-                    LegacyId = legacyId,
-                    LegacyLabel = legacyLabel,
-                };
-            });
+                            return null;
+                        });
 
             await context.SendResponse(HttpStatusCode.OK, result);
         }
@@ -65,26 +62,23 @@ namespace SHRestAPI.Controllers
             var result = await Polling.Poll(
                 () =>
                 {
-                    string legacyId = null;
-                    string legacyLabel = null;
                     var stageHand = Watchman.Get<StageHand>();
                     if (stageHand.SceneIsActive(Constants.GameScene))
                     {
                         var protag = Watchman.Get<Stable>().Protag();
-                        legacyId = protag.ActiveLegacy.Id;
-                        legacyLabel = protag.ActiveLegacy.Label;
+                        return new
+                        {
+                            legacyId = protag.ActiveLegacy.Id,
+                            legacyLabel = protag.ActiveLegacy.Label,
+                        };
                     }
 
-                    return new LegacyPayload
-                    {
-                        LegacyId = legacyId,
-                        LegacyLabel = legacyLabel,
-                    };
+                    return null;
                 },
                 previousHash,
                 timeout,
                 resolution,
-                x => x.LegacyId != null ? x.LegacyId.GetHashCode() : 0);
+                x => x != null ? x.legacyId.GetHashCode() : 0);
 
             await context.SendResponse(HttpStatusCode.OK, new
             {
@@ -101,7 +95,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "elements-manifested")]
         public async Task GetUniqueElementsManifested(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
                 return character.UniqueElementsManifested.ToArray();
@@ -119,7 +113,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "ambittable-recipes-unlocked")]
         public async Task GetAmbittableRecipesUnlocked(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
                 return character.AmbittableRecipesUnlocked.ToArray();
@@ -137,7 +131,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "recipes-executed")]
         public async Task GetRecipesExecuted(IHttpContext context)
         {
-            var result = await Dispatcher.RunOnMainThread(() =>
+            var result = await Dispatcher.DispatchRead(() =>
             {
                 var character = Watchman.Get<Stable>().Protag();
 #if BH

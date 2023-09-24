@@ -23,9 +23,9 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET")]
         public async Task GetSituations(IHttpContext context)
         {
-            var result = Dispatcher.RunOnMainThread(() => (from situation in Watchman.Get<HornedAxe>().GetRegisteredSituations()
-                                                           let json = JsonTranslator.ObjectToJson(situation)
-                                                           select json).ToArray());
+            var result = Dispatcher.DispatchRead(() => (from situation in Watchman.Get<HornedAxe>().GetRegisteredSituations()
+                                                        let json = JsonTranslator.ObjectToJson(situation)
+                                                        select json).ToArray());
             await context.SendResponse(HttpStatusCode.OK, result);
         }
 
@@ -38,7 +38,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = ":situationId")]
         public async Task GetSituationById(IHttpContext context, string situationId)
         {
-            var result = Dispatcher.RunOnMainThread(() =>
+            var result = Dispatcher.DispatchRead(() =>
             {
                 var situation = Watchman.Get<HornedAxe>().GetRegisteredSituations().FirstOrDefault(x => x.VerbId == situationId);
                 if (situation == null)
