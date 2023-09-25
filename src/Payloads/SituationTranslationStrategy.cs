@@ -235,6 +235,32 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
+        /// Gets the verb label of this situation.
+        /// </summary>
+        /// <param name="situation">The sittuation.</param>
+        /// <returns>The verb label.</returns>
+        [JsonPropertyGetter("verbLabel")]
+        public string GetVerbLabel(Situation situation)
+        {
+            return situation.Verb.Label;
+        }
+
+        /// <summary>
+        /// Gets the verb description of this situation.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>The verb description.</returns>
+        [JsonPropertyGetter("verbDescription")]
+        public string GetVerbDescription(Situation situation)
+        {
+#if BH
+            return situation.Verb.Desc;
+#else
+            return situation.Verb.Description;
+#endif
+        }
+
+        /// <summary>
         /// Gets a value indicating if the situation is open.
         /// </summary>
         /// <param name="situation">The situation.</param>
