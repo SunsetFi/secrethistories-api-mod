@@ -70,7 +70,9 @@ namespace SHRestAPI.Payloads
                 throw new BadRequestException($"No sphere found at path \"{path}\".");
             }
 
-            if (!fucinePath.TargetSphere.TryAcceptToken(payload.GetToken(), new Context(Context.ActionSource.PlayerDrag)))
+            var token = payload.GetToken();
+            token.RequestHomeLocationFromCurrentSphere();
+            if (!fucinePath.TargetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)))
             {
                 throw new BadRequestException($"The ITokenPayload could not be moved to sphere \"{path}\".");
             }

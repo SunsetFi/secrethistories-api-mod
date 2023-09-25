@@ -87,7 +87,6 @@ namespace SHRestAPI.Server
 
         private async Task OnRequest(HttpListenerContext context)
         {
-
             // Need to get this ahead of time as we loose access to it when the context is disposed.
             var remoteEndPoint = context.Request.RemoteEndPoint.ToString();
 
