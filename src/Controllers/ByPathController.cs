@@ -283,15 +283,21 @@ namespace SHRestAPI.Controllers
         {
             await Dispatcher.DispatchWrite(() =>
             {
-                var token = this.WebSafeParse(path).GetToken();
-                if (token == null)
+                var parsedPath = this.WebSafeParse(path);
+
+                var token = parsedPath.TargetToken;
+                if (token != null)
                 {
-                    throw new NotFoundException($"No token found at path \"{path}\".");
+                    // TODO: We should be smarter about when we can and cannot evict.
+                    // Dont evict from tabletop, portage, or the player's hand.
+                    token.Sphere.EvictToken(token, new Context(Context.ActionSource.UI));
                 }
 
-                // TODO: We should be smarter about when we can and cannot evict.
-                // Dont evict from tabletop, portage, or the player's hand.
-                token.Sphere.EvictToken(token, new Context(Context.ActionSource.UI));
+                var sphere = parsedPath.TargetSphere;
+                if (sphere != null)
+                {
+                    sphere.EvictAllTokens(new Context(Context.ActionSource.UI));
+                }
             });
 
             await context.SendResponse(HttpStatusCode.OK);
