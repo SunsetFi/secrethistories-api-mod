@@ -272,6 +272,31 @@ namespace SHRestAPI.Controllers
         //     await context.SendResponse(HttpStatusCode.OK);
         // }
 
+        /// <summary>
+        /// Evict the token at the given path.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="path">The path of the token to evict.</param>
+        /// <returns>A task that resolves once the request is completed.</returns>
+        [WebRouteMethod(Method = "POST", Path = "**path/evict")]
+        public async Task EvictItemAtPath(IHttpContext context, string path)
+        {
+            await Dispatcher.DispatchWrite(() =>
+            {
+                var token = this.WebSafeParse(path).GetToken();
+                if (token == null)
+                {
+                    throw new NotFoundException($"No token found at path \"{path}\".");
+                }
+
+                // TODO: We should be smarter about when we can and cannot evict.
+                // Dont evict from tabletop, portage, or the player's hand.
+                token.Sphere.EvictToken(token, new Context(Context.ActionSource.UI));
+            });
+
+            await context.SendResponse(HttpStatusCode.OK);
+        }
+
 #if BH
         /// <summary>
         /// Focuses the item at the given path.
