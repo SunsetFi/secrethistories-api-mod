@@ -40,6 +40,17 @@ namespace SHRestAPI.Payloads
             return obj;
         }
 
+        /// <summary>
+        /// Gets the slots for this element.
+        /// </summary>
+        /// <param name="element">The element.</param>
+        /// <returns>The element slots.</returns>
+        [JsonPropertyGetter("slots")]
+        public JObject[] GetSlots(Element element)
+        {
+            return element.Slots.Select(JsonTranslator.ObjectToJson).ToArray();
+        }
+
 #if CS
         // Another entry that seems to have been removed with BH in a beta
         /// <summary>

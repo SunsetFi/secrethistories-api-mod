@@ -34,6 +34,17 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
+        /// Gets the action id this slot should be active on.
+        /// </summary>
+        /// <param name="sphereSpec">The sphere spec.</param>
+        /// <returns>The action id.</returns>
+        [JsonPropertyGetter("actionId")]
+        public string GetActionId(SphereSpec sphereSpec)
+        {
+            return sphereSpec.ActionId;
+        }
+
+        /// <summary>
         /// Gets the description for this sphere spec.
         /// </summary>
         /// <param name="sphereSpec">The sphere spec.</param>
