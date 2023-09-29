@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using Newtonsoft.Json.Linq;
     using SecretHistories.Entities;
     using SHRestAPI.JsonTranslation;
@@ -64,6 +65,17 @@ namespace SHRestAPI.Payloads
         public bool GetGreedy(SphereSpec sphereSpec)
         {
             return sphereSpec.Greedy;
+        }
+
+        /// <summary>
+        /// Gets aspects that must be present for a slot to exist.
+        /// </summary>
+        /// <param name="sphereSpec">The sphere spec.</param>
+        /// <returns>The required aspects.</returns>
+        [JsonPropertyGetter("ifAspectsPresent")]
+        public Dictionary<string, string> GetIfAspectsPresent(SphereSpec sphereSpec)
+        {
+            return sphereSpec.IfAspectsPresent;
         }
 
         /// <summary>
