@@ -23,7 +23,7 @@ namespace SHRestAPI.Server
         public HttpListenerHttpContext(HttpListenerContext context)
         {
             this.context = context;
-            this.queryString = context.Request.QueryString.AllKeys.ToDictionary(key => key, key => context.Request.QueryString[key]);
+            this.queryString = context.Request.QueryString.AllKeys.Where(x => x != null).ToDictionary(key => key, key => context.Request.QueryString[key]);
         }
 
         /// <inheritdoc/>
