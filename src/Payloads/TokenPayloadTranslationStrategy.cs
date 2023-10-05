@@ -88,5 +88,16 @@ namespace SHRestAPI.Payloads
         {
             return payload.GetType().Name;
         }
+
+        /// <summary>
+        /// Gets the space occupation type of this token.
+        /// </summary>
+        /// <param name="payload">The token payload.</param>
+        /// <returns>The type of space this token occupies.</returns>
+        [JsonPropertyGetter("occupiesSpaceAs")]
+        public string GetOccupiesSpaceAs(ITokenPayload payload)
+        {
+            return payload.GetToken().OccupiesSpaceAs().ToString();
+        }
     }
 }

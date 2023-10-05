@@ -23,7 +23,10 @@ namespace SHRestAPI.Controllers
     [WebController(Path = "api/time")]
     public class TimeController
     {
-        private readonly float MinimumHeartbeatInterval = 0.1f;
+        /// <summary>
+        /// The minimum amount of time to elapse in a single beat.
+        /// </summary>
+        private const float MinimumHeartbeatInterval = 0.1f;
 
         /// <summary>
         /// Gets the game speed.
@@ -107,27 +110,21 @@ namespace SHRestAPI.Controllers
                 var timeRemaining = payload.Seconds;
                 while (timeRemaining > 0)
                 {
-                    Logging.LogInfo($"Beat check.  Next card time {GetNextCardTime()}, next verb time {GetNextVerbTime()}");
-
                     var nextEvent = Math.Min(
                         GetNextCardTime().NanToDefault(float.PositiveInfinity),
                         GetNextVerbTime().NanToDefault(float.PositiveInfinity));
 
-                    Logging.LogInfo($"Beat time remaining: {timeRemaining} next event {nextEvent}");
                     var skip = Math.Min(timeRemaining, nextEvent);
 
                     // Heart usually enforces this interval, but before we get to Beat()
-                    if (skip < this.MinimumHeartbeatInterval)
+                    if (skip < MinimumHeartbeatInterval)
                     {
-                        skip = this.MinimumHeartbeatInterval;
+                        skip = MinimumHeartbeatInterval;
                     }
 
-                    Logging.LogInfo($"Beating for {skip}");
-
-                    heart.Beat(skip, this.MinimumHeartbeatInterval);
+                    heart.Beat(skip, MinimumHeartbeatInterval);
 
                     timeRemaining -= skip;
-                    Logging.LogInfo($"Time remaining is now {timeRemaining}");
                 }
             });
 
@@ -192,13 +189,13 @@ namespace SHRestAPI.Controllers
                 }
 
                 // Heart usually enforces this interval, but before we get to Beat()
-                if (timeToBeat < this.MinimumHeartbeatInterval)
+                if (timeToBeat < MinimumHeartbeatInterval)
                 {
-                    timeToBeat = this.MinimumHeartbeatInterval;
+                    timeToBeat = MinimumHeartbeatInterval;
                 }
 
                 var heart = Watchman.Get<Heart>();
-                heart.Beat(timeToBeat, this.MinimumHeartbeatInterval);
+                heart.Beat(timeToBeat, MinimumHeartbeatInterval);
             });
 
             await Settler.AwaitSettled();
