@@ -19,6 +19,13 @@
     <CSModDir>$([System.IO.Path]::Combine($(HOME), 'Library\Application Support\Weather Factory\Cultist Simulator\mods'))</CSModDir>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <BHDataDir>$([System.IO.Path]::Combine($(BOHDir), 'bh_Data'))</BHDataDir>
+    <BHModDir>$([System.IO.Path]::Combine($(HOME), '.config\unity3d\Weather Factory\Book of Hours\mods'))</BHModDir>
+    <CSDataDir>$([System.IO.Path]::Combine($(CSDir), 'CS_Data'))</CSDataDir>
+    <CSModDir>$([System.IO.Path]::Combine($(HOME), '.config\unity3d\Weather Factory\Cultist Simulator\mods'))</CSModDir>
+  </PropertyGroup>
+  
   <PropertyGroup Condition="'$(GAME)' == 'CS'">
     <DataDir>$(CSDataDir)</DataDir>
     <ModDir>$(CSModDir)</ModDir>
