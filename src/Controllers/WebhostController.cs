@@ -131,9 +131,9 @@ namespace SHRestAPI.Controllers
             }
 
             var webhostPath = Path.GetFullPath(SHRest.WebhostPath);
-            if (!webhostPath.EndsWith("\\"))
+            if (!webhostPath.EndsWith(Path.DirectorySeparatorChar))
             {
-                webhostPath += "\\";
+                webhostPath += Path.DirectorySeparatorChar;
             }
 
             if (path.StartsWith("/") || path.StartsWith("\\"))
@@ -148,6 +148,7 @@ namespace SHRestAPI.Controllers
                 throw new NotFoundException();
             }
 
+            Logging.LogInfo("Final path: " + path);
             return path;
         }
     }
