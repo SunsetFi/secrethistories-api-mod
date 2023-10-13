@@ -148,7 +148,6 @@ namespace SHRestAPI.Controllers
                 throw new NotFoundException();
             }
 
-            Logging.LogInfo("Final path: " + path);
             return path;
         }
     }
