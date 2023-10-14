@@ -103,14 +103,12 @@ namespace SHRestAPI.Controllers
 
             var nexus = Watchman.Get<LocalNexus>();
             var heart = Watchman.Get<Heart>();
-            Logging.LogInfo($"Elapsing {payload.Seconds}");
 
             // TODO: If we are already force paused, dont do this and dont unpause.
             // TODO: We will probably break everything if we are in the tree of wisdom here.
             await Dispatcher.DispatchWrite(() => nexus.ForcePauseGame(false));
             try
             {
-
                 var timeRemaining = payload.Seconds;
                 while (timeRemaining > 0)
                 {
@@ -119,8 +117,6 @@ namespace SHRestAPI.Controllers
                         var nextEvent = Math.Min(
                                                 GetNextCardTime().NanToDefault(float.PositiveInfinity),
                                                 GetNextVerbTime().NanToDefault(float.PositiveInfinity));
-
-                        Logging.LogInfo($"Next event in {nextEvent}");
 
                         var skip = Math.Min(timeRemaining, nextEvent);
 
@@ -131,19 +127,15 @@ namespace SHRestAPI.Controllers
                             skip = MinimumHeartbeatInterval;
                         }
 
-                        Logging.LogInfo($"Skipping {skip}");
-
                         heart.Beat(skip, 0);
 
                         timeRemaining -= skip;
-                        Logging.LogInfo($"Time remaining {timeRemaining}");
                     });
 
                     // Some time critical verbs need to respond to cards getting greedied up into them.
                     // This particularly affects incidents, which will try to suck up a new visitor, then think they have no visitors
                     // before the visitor can animate into it.
                     await Settler.AwaitSettled();
-                    Logging.LogInfo($"Settled");
                 }
 
             }
@@ -249,7 +241,6 @@ namespace SHRestAPI.Controllers
                 return float.NaN;
             }
 
-            Logging.LogInfo($"Lowest card {found.Element.Id} has time remaining {found.LifetimeRemaining}");
             return found.LifetimeRemaining;
         }
 
@@ -273,8 +264,6 @@ namespace SHRestAPI.Controllers
                     continue;
                 }
 
-                Logging.LogInfo($"Verb {verb.VerbId} has time remaining {verb.TimeRemaining}");
-
                 if (verb.TimeRemaining < lowest)
                 {
                     lowest = verb.TimeRemaining;
@@ -286,8 +275,6 @@ namespace SHRestAPI.Controllers
             {
                 return float.NaN;
             }
-
-            Logging.LogInfo($"Lowest Verb {lowestVerb.VerbId} has time remaining {lowestVerb.TimeRemaining}");
 
             return lowest;
         }
