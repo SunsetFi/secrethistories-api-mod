@@ -115,13 +115,12 @@ namespace SHRestAPI.Controllers
                     await Dispatcher.DispatchWrite(() =>
                     {
                         var nextEvent = Math.Min(
-                                                GetNextCardTime().NanToDefault(float.PositiveInfinity),
-                                                GetNextVerbTime().NanToDefault(float.PositiveInfinity));
+                            GetNextCardTime().NanToDefault(float.PositiveInfinity),
+                            GetNextVerbTime().NanToDefault(float.PositiveInfinity));
 
                         var skip = Math.Min(timeRemaining, nextEvent);
 
                         // Heart usually enforces this interval, but before we get to Beat()
-                        // Interestingly, we get all sorts of baffling behavior without this.
                         if (skip < MinimumHeartbeatInterval)
                         {
                             skip = MinimumHeartbeatInterval;
