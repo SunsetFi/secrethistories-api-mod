@@ -2,13 +2,13 @@ namespace SHRestAPI.Controllers
 {
     using System;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using SecretHistories.Constants;
     using SecretHistories.Entities;
 #if BH
     using SecretHistories.Infrastructure;
 #elif CS
-    // LocalNexus is located in Fucine in CS for some baffling reason.
     using SecretHistories.Fucine;
 #endif
     using SecretHistories.UI;
@@ -16,6 +16,7 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
+    using SHRestAPI.Tasks;
 
     /// <summary>
     /// Web request controller for time-related requests.
@@ -64,22 +65,23 @@ namespace SHRestAPI.Controllers
 
             await Dispatcher.DispatchWrite(() =>
             {
+                var localNexus = Watchman.Get<LocalNexus>();
                 if (payload.GameSpeed == SecretHistories.Enums.GameSpeed.Paused)
                 {
                     // Pause the game at the user's pause level.
-                    Watchman.Get<LocalNexus>().PauseGame(true);
+                    localNexus.PauseGame(true);
                 }
                 else
                 {
                     // Unpause from the user's pause level if needed.
-                    Watchman.Get<LocalNexus>().UnPauseGame(true);
+                    localNexus.UnPauseGame(true);
 
                     var controlEventArgs = new SpeedControlEventArgs()
                     {
                         ControlPriorityLevel = 1,
                         GameSpeed = payload.GameSpeed,
                     };
-                    Watchman.Get<LocalNexus>().SpeedControlEvent.Invoke(controlEventArgs);
+                    localNexus.SpeedControlEvent.Invoke(controlEventArgs);
                 }
             });
 
@@ -99,36 +101,56 @@ namespace SHRestAPI.Controllers
             var payload = context.ParseBody<PassTimePayload>();
             payload.Validate();
 
-            await Dispatcher.DispatchWrite(() =>
-            {
-                var heart = Watchman.Get<Heart>();
+            var nexus = Watchman.Get<LocalNexus>();
+            var heart = Watchman.Get<Heart>();
+            Logging.LogInfo($"Elapsing {payload.Seconds}");
 
-                // I strongly suspect the game does not reprocess the next recipe timer if an event completes early
-                // in a beat.
-                // To work around this, we split the beats between interesting events to keep the game
-                // operating as intended when skipping large amounts of time.
+            // TODO: If we are already force paused, dont do this and dont unpause.
+            // TODO: We will probably break everything if we are in the tree of wisdom here.
+            await Dispatcher.DispatchWrite(() => nexus.ForcePauseGame(false));
+            try
+            {
+
                 var timeRemaining = payload.Seconds;
                 while (timeRemaining > 0)
                 {
-                    var nextEvent = Math.Min(
-                        GetNextCardTime().NanToDefault(float.PositiveInfinity),
-                        GetNextVerbTime().NanToDefault(float.PositiveInfinity));
-
-                    var skip = Math.Min(timeRemaining, nextEvent);
-
-                    // Heart usually enforces this interval, but before we get to Beat()
-                    if (skip < MinimumHeartbeatInterval)
+                    await Dispatcher.DispatchWrite(() =>
                     {
-                        skip = MinimumHeartbeatInterval;
-                    }
+                        var nextEvent = Math.Min(
+                                                GetNextCardTime().NanToDefault(float.PositiveInfinity),
+                                                GetNextVerbTime().NanToDefault(float.PositiveInfinity));
 
-                    heart.Beat(skip, MinimumHeartbeatInterval);
+                        Logging.LogInfo($"Next event in {nextEvent}");
 
-                    timeRemaining -= skip;
+                        var skip = Math.Min(timeRemaining, nextEvent);
+
+                        // Heart usually enforces this interval, but before we get to Beat()
+                        // Interestingly, we get all sorts of baffling behavior without this.
+                        if (skip < MinimumHeartbeatInterval)
+                        {
+                            skip = MinimumHeartbeatInterval;
+                        }
+
+                        Logging.LogInfo($"Skipping {skip}");
+
+                        heart.Beat(skip, 0);
+
+                        timeRemaining -= skip;
+                        Logging.LogInfo($"Time remaining {timeRemaining}");
+                    });
+
+                    // Some time critical verbs need to respond to cards getting greedied up into them.
+                    // This particularly affects incidents, which will try to suck up a new visitor, then think they have no visitors
+                    // before the visitor can animate into it.
+                    await Settler.AwaitSettled();
+                    Logging.LogInfo($"Settled");
                 }
-            });
 
-            await Settler.AwaitSettled();
+            }
+            finally
+            {
+                await Dispatcher.DispatchWrite(() => nexus.UnForcePauseGame(false));
+            }
 
             await context.SendResponse(HttpStatusCode.OK);
         }
@@ -210,7 +232,7 @@ namespace SHRestAPI.Controllers
         // see: https://github.com/KatTheFox/The-Wheel/blob/main/TheWheel.cs
         private static float GetNextCardTime()
         {
-            var elementStacks = from sphere in Watchman.Get<HornedAxe>().GetExteriorSpheres()
+            var elementStacks = from sphere in Watchman.Get<HornedAxe>().GetSpheres()
                                 where sphere.TokenHeartbeatIntervalMultiplier > 0.0f
                                 from token in sphere.GetTokens()
                                 let payload = token.Payload
@@ -227,7 +249,7 @@ namespace SHRestAPI.Controllers
                 return float.NaN;
             }
 
-            Logging.LogInfo("Lowest card", found.Element.Id);
+            Logging.LogInfo($"Lowest card {found.Element.Id} has time remaining {found.LifetimeRemaining}");
             return found.LifetimeRemaining;
         }
 
@@ -251,6 +273,8 @@ namespace SHRestAPI.Controllers
                     continue;
                 }
 
+                Logging.LogInfo($"Verb {verb.VerbId} has time remaining {verb.TimeRemaining}");
+
                 if (verb.TimeRemaining < lowest)
                 {
                     lowest = verb.TimeRemaining;
@@ -263,7 +287,7 @@ namespace SHRestAPI.Controllers
                 return float.NaN;
             }
 
-            Logging.LogInfo($"Verb {lowestVerb.VerbId} has time remaining {lowestVerb.TimeRemaining}");
+            Logging.LogInfo($"Lowest Verb {lowestVerb.VerbId} has time remaining {lowestVerb.TimeRemaining}");
 
             return lowest;
         }

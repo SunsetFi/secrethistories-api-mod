@@ -29,6 +29,11 @@ namespace SHRestAPI.Controllers
                             if (stageHand.SceneIsActive(Constants.GameScene))
                             {
                                 var protag = Watchman.Get<Stable>().Protag();
+                                if (!protag)
+                                {
+                                    return null;
+                                }
+
                                 return new
                                 {
                                     legacyId = protag.ActiveLegacy.Id,
@@ -66,6 +71,11 @@ namespace SHRestAPI.Controllers
                     if (stageHand.SceneIsActive(Constants.GameScene))
                     {
                         var protag = Watchman.Get<Stable>().Protag();
+                        if (!protag)
+                        {
+                            return null;
+                        }
+
                         return new
                         {
                             legacyId = protag.ActiveLegacy.Id,
@@ -80,11 +90,18 @@ namespace SHRestAPI.Controllers
                 resolution,
                 x => x != null ? x.legacyId.GetHashCode() : 0);
 
-            await context.SendResponse(HttpStatusCode.OK, new
+            if (result == null)
             {
-                hash = result.Item1,
-                legacy = result.Item2,
-            });
+                await context.SendResponse(HttpStatusCode.OK, null);
+            }
+            else
+            {
+                await context.SendResponse(HttpStatusCode.OK, new
+                {
+                    hash = result.Item1,
+                    legacy = result.Item2,
+                });
+            }
         }
 
         /// <summary>

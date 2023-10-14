@@ -1,7 +1,6 @@
-using System;
-
 namespace SHRestAPI
 {
+    using System;
     using System.Threading.Tasks;
     using SecretHistories.UI;
     using UnityEngine;
