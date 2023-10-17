@@ -372,6 +372,44 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK);
         }
 
+#if BH
+        /// <summary>
+        /// Sets the recipe of the unstarted situation at the given path.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="path">The path of the situation token.</param>
+        /// <returns>A task that resolves once the request is completed.</returns>
+        [WebRouteMethod(Method = "POST", Path = "**path/recipe")]
+        public async Task SetRecipeAtPath(IHttpContext context, string path)
+        {
+            await Dispatcher.DispatchWrite(() =>
+            {
+                var payload = context.ParseBody<SetRecipePayload>();
+
+                var token = this.WebSafeParse(path).GetToken();
+                if (token == null || token.Payload is not Situation situation)
+                {
+                    throw new NotFoundException($"No situation found at path \"{path}\".");
+                }
+
+                var recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(payload.RecipeId);
+                if (recipe == null || !recipe.IsValid())
+                {
+                    throw new BadRequestException($"No recipe found with id \"{payload.RecipeId}\".");
+                }
+
+                if (situation.StateIdentifier != StateEnum.Unstarted)
+                {
+                    throw new ConflictException($"Situation {situation.VerbId} is not in the correct state to set a recipe.");
+                }
+
+                situation.OverrideCurrentRecipeForUnstarted(recipe);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK);
+        }
+#endif
+
         /// <summary>
         /// Executes the recipe of the situation at the given path.
         /// </summary>

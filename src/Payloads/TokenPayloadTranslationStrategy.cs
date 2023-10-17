@@ -37,12 +37,23 @@ namespace SHRestAPI.Payloads
         /// <summary>
         /// Gets the fucine path of the containing sphere.
         /// </summary>
-        /// <param name="payload">The payload.GetToken().</param>
+        /// <param name="payload">The payload.</param>
         /// <returns>The full path to the sphere.</returns>
         [JsonPropertyGetter("spherePath")]
         public string GetPath(ITokenPayload payload)
         {
             return payload.GetToken().Sphere.GetAbsolutePath().Path;
+        }
+
+        /// <summary>
+        /// Gets a value indicating if this token is in an exterior sphere.
+        /// </summary>
+        /// <param name="payload">The payload.</param>
+        /// <returns>A value indicating whether the token is in an exterior sphere.</returns>
+        [JsonPropertyGetter("inExteriorSphere")]
+        public bool GetInExteriorSphere(ITokenPayload payload)
+        {
+            return payload.GetToken().Sphere.IsExteriorSphere;
         }
 
         /// <summary>
@@ -71,10 +82,17 @@ namespace SHRestAPI.Payloads
             }
 
             var token = payload.GetToken();
+
+            var currentSphere = token.Sphere;
+            if (!currentSphere.IsExteriorSphere)
+            {
+                throw new ConflictException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} is not in an exterior sphere.");
+            }
+
             token.RequestHomeLocationFromCurrentSphere();
             if (!fucinePath.TargetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)))
             {
-                throw new BadRequestException($"The ITokenPayload could not be moved to sphere \"{path}\".");
+                throw new BadRequestException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} could not be moved to sphere \"{path}\".");
             }
         }
 

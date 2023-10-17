@@ -18,6 +18,11 @@ namespace SHRestAPI
         /// <returns>A task that resolves when the focus is completed.</returns>
         public static async Task FocusToken(Token token)
         {
+            if (!IsLibraryToken(token))
+            {
+                return;
+            }
+
             await PanToPosition(token.transform.position, 0.2f);
             await Zoom(Watchman.Get<CamOperator>().ZOOM_Z_QUITE_CLOSE, 0.1f);
         }
@@ -36,6 +41,22 @@ namespace SHRestAPI
             var taskSource = new TaskCompletionSource<bool>();
             camOperator.RequestZoom(level, camOperator.GetAttachedCamera().transform.position, duration, new Func<float, float>(Easing.Exponential.Out), () => taskSource.SetResult(true));
             return taskSource.Task;
+        }
+
+        private static bool IsLibraryToken(Token token)
+        {
+            var parent = token.transform.parent;
+            while (parent != null)
+            {
+                if (parent.name == "Library")
+                {
+                    return true;
+                }
+
+                parent = parent.transform.parent;
+            }
+
+            return false;
         }
     }
 #endif

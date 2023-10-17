@@ -2,7 +2,6 @@ namespace SHRestAPI.Controllers
 {
     using System;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using SecretHistories.Constants;
     using SecretHistories.Entities;
@@ -16,7 +15,6 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
-    using SHRestAPI.Tasks;
 
     /// <summary>
     /// Web request controller for time-related requests.
@@ -136,7 +134,6 @@ namespace SHRestAPI.Controllers
                     // before the visitor can animate into it.
                     await Settler.AwaitSettled();
                 }
-
             }
             finally
             {
