@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using Newtonsoft.Json.Linq;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
@@ -185,6 +186,17 @@ namespace SHRestAPI.Payloads
         public string GetIcon(ElementStack elementStack)
         {
             return elementStack.Icon;
+        }
+
+        /// <summary>
+        /// Gets all illuminations for this element stack.
+        /// </summary>
+        /// <param name="elementStack">The element stack.</param>
+        /// <returns>The illuminations for this element stack.</returns>
+        [JsonPropertyGetter("illuminations")]
+        public IDictionary<string, string> GetIllumnations(ElementStack elementStack)
+        {
+            return elementStack.GetIlluminations();
         }
 
         /// <summary>

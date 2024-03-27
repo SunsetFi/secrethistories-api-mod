@@ -1,4 +1,4 @@
-namespace SHRestAPI
+namespace SHRestAPI.Server
 {
     /// <summary>
     /// Gets mime types for file extensions.
