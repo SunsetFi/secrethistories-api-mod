@@ -96,12 +96,13 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("recipeId")]
         public string GetFallbackRecipeId(Situation situation)
         {
-            if (!situation.FallbackRecipe.IsValid())
+            var fallbackRecipe = situation.GetFallbackRecipe();
+            if (fallbackRecipe == null || !fallbackRecipe.IsValid())
             {
                 return null;
             }
 
-            return situation.FallbackRecipe.Id;
+            return fallbackRecipe.Id;
         }
 
         /// <summary>
@@ -126,7 +127,7 @@ namespace SHRestAPI.Payloads
 
                 situation.State = SituationState.Rehydrate(SecretHistories.Enums.StateEnum.Unstarted, situation);
                 situation.SetRecipeActive(nullRecipe);
-                situation.CurrentRecipe = nullRecipe;
+                situation.SetCurrentRecipe(nullRecipe);
             }
             else if (situation.StateIdentifier != SecretHistories.Enums.StateEnum.Unstarted)
             {
@@ -150,12 +151,13 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("recipeLabel")]
         public string GetFallbackRecipeName(Situation situation)
         {
-            if (!situation.FallbackRecipe.IsValid())
+            var fallbackRecipe = situation.GetFallbackRecipe();
+            if (fallbackRecipe == null || !fallbackRecipe.IsValid())
             {
                 return null;
             }
 
-            return situation.FallbackRecipe.Label;
+            return fallbackRecipe.Label;
         }
 
         /// <summary>
@@ -166,12 +168,13 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("currentRecipeId")]
         public string GetCurrentRecipeId(Situation situation)
         {
-            if (!situation.CurrentRecipe.IsValid())
+            var currentRecipe = situation.GetCurrentRecipe();
+            if (currentRecipe == null || currentRecipe.IsValid())
             {
                 return null;
             }
 
-            return situation.CurrentRecipe.Id;
+            return currentRecipe.Id;
         }
 
         /// <summary>
@@ -182,12 +185,13 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("currentRecipeLabel")]
         public string GetCurrentRecipeLabel(Situation situation)
         {
-            if (!situation.CurrentRecipe.IsValid())
+            var currentRecipe = situation.GetCurrentRecipe();
+            if (currentRecipe == null || currentRecipe.IsValid())
             {
                 return null;
             }
 
-            return situation.CurrentRecipe.Label;
+            return currentRecipe.Label;
         }
 
         /// <summary>

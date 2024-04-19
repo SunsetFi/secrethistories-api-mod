@@ -113,7 +113,7 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("infoRecipeId")]
         public string GetInfoRecipe(TerrainFeature terrain)
         {
-            return terrain.InfoRecipe?.Id;
+            return terrain.GetInfoRecipe()?.Id;
         }
 
         // [JsonPropertyGetter("infoRecipeStartLabel")]

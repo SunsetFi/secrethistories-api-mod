@@ -440,10 +440,11 @@ namespace SHRestAPI.Controllers
                         throw new ConflictException($"Situation {situation.VerbId} could not begin it's recipe.");
                     }
 
+                    var fallbackRecipe = situation.GetFallbackRecipe();
                     return new
                     {
-                        executedRecipeId = situation.FallbackRecipe.Id,
-                        executedRecipeLabel = situation.FallbackRecipe.Label,
+                        executedRecipeId = fallbackRecipe.Id,
+                        executedRecipeLabel = fallbackRecipe.Label,
                         timeRemaining = situation.TimeRemaining,
                     };
                 }
@@ -461,7 +462,7 @@ namespace SHRestAPI.Controllers
 
                     inputSphere.Tokens.First().Retire(RetirementVFX.None);
                     var terrainSphere = terrain.Token.Sphere;
-                    var infoRecipe = terrain.InfoRecipe;
+                    var infoRecipe = terrain.GetInfoRecipe();
                     var sphereSpace = terrain.Token.Sphere.TransformWorldPositionToSphereSpace(terrain.GetPositionForUnlockToken());
                     var unlockSituationToken = new TokenCreationCommand(
                         new SituationCreationCommand("terrain.unlock").WithRecipeAboutToActivate(infoRecipe.Id),
@@ -469,10 +470,11 @@ namespace SHRestAPI.Controllers
                     detailWindow.Hide();
 
                     var unlockSituation = unlockSituationToken.Payload as Situation;
+                    var fallbackRecipe = unlockSituation.GetFallbackRecipe();
                     return new
                     {
-                        executedRecipeId = unlockSituation.FallbackRecipe.Id,
-                        executedRecipeLabel = unlockSituation.FallbackRecipe.Label,
+                        executedRecipeId = fallbackRecipe.Id,
+                        executedRecipeLabel = fallbackRecipe.Label,
                         timeRemaining = unlockSituation.TimeRemaining,
                     };
                 }
@@ -564,7 +566,7 @@ namespace SHRestAPI.Controllers
                     var sphere = terrain.Token.Sphere;
                     var sphereSpace = sphere.TransformWorldPositionToSphereSpace(terrain.GetPositionForUnlockToken());
                     var command = new TokenCreationCommand(
-                        new SituationCreationCommand("terrain.unlock").WithRecipeAboutToActivate(terrain.InfoRecipe.Id),
+                        new SituationCreationCommand("terrain.unlock").WithRecipeAboutToActivate(terrain.GetInfoRecipe().Id),
                         new TokenLocation(sphereSpace, sphere));
                     command.Execute(global::Context.Unknown(), sphere);
                 }
