@@ -39,7 +39,7 @@ namespace SHRestAPI
         {
             var camOperator = Watchman.Get<CamOperator>();
             var taskSource = new TaskCompletionSource<bool>();
-            camOperator.RequestZoom(level, camOperator.GetAttachedCamera().transform.position, duration, new Func<float, float>(Easing.Exponential.Out), () => taskSource.SetResult(true));
+            camOperator.RequestZoom(level, camOperator.GetAttachedCamera().transform.position, duration, new Func<float, float>(Easing.Exponential.Out), CameraInteractionType.Other, () => taskSource.SetResult(true));
             return taskSource.Task;
         }
 
