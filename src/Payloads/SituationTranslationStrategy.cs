@@ -4,6 +4,7 @@ namespace SHRestAPI.Payloads
     using Newtonsoft.Json.Linq;
     using SecretHistories.Commands.SituationCommands;
     using SecretHistories.Entities;
+    using SecretHistories.Enums;
     using SecretHistories.States;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
@@ -74,7 +75,18 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("thresholds")]
         public JObject[] GetThresholds(Situation situation)
         {
-            return situation.Verb.Thresholds.Select(JsonTranslator.ObjectToJson).ToArray();
+            if (situation.State.Identifier == StateEnum.Ongoing)
+            {
+                return situation.GetDominion(SituationDominionEnum.RecipeThresholds).Spheres.Select(x => x.GoverningSphereSpec).Select(JsonTranslator.ObjectToJson).ToArray();
+            }
+            else if (situation.State.Identifier == StateEnum.Unstarted || situation.State.Identifier == StateEnum.RequiringExecution)
+            {
+                return situation.GetDominion(SituationDominionEnum.VerbThresholds).Spheres.Select(x => x.GoverningSphereSpec).Select(JsonTranslator.ObjectToJson).ToArray();
+            }
+            else
+            {
+                return new JObject[0];
+            }
         }
 
         /// <summary>
