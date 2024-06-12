@@ -3,10 +3,12 @@ namespace SHRestAPI.Controllers
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Newtonsoft.Json.Linq;
     using SecretHistories.Entities;
     using SecretHistories.UI;
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
+    using SHRestAPI.Server.Exceptions;
 
     /// <summary>
     /// Endpoints for token fetching.
@@ -60,6 +62,55 @@ namespace SHRestAPI.Controllers
                 }
 
                 return query.Select(TokenUtils.TokenToJObject).ToArray();
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
+        /// Gets a token by its id.
+        /// </summary>
+        [WebRouteMethod(Method = "GET", Path = ":tokenId")]
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="tokenId">The id of the token to get.</param>
+        /// <returns>A task that resolves when the request has been handled.</returns>
+        public async Task GetTokenById(IHttpContext context, string tokenId)
+        {
+            var result = await Dispatcher.DispatchRead(() =>
+            {
+                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => t.PayloadId == tokenId);
+                if (token == null)
+                {
+                    throw new NotFoundException($"Token {tokenId} not found.");
+                }
+
+                return TokenUtils.TokenToJObject(token);
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        /// <summary>
+        /// Updates a token by its id.
+        /// </summary>
+        /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="tokenId">The id of the token to update.</param>
+        /// <returns>A task that resolves when the request has been handled.</returns>
+        [WebRouteMethod(Method = "PATCH", Path = ":tokenId")]
+        public async Task UpdateToken(IHttpContext context, string tokenId)
+        {
+            var payload = context.ParseBody<JObject>();
+            var result = await Dispatcher.DispatchWrite(() =>
+            {
+                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => t.PayloadId == tokenId);
+                if (token == null)
+                {
+                    throw new NotFoundException($"Token {tokenId} not found.");
+                }
+
+                TokenUtils.UpdateToken(payload, token);
+
+                return TokenUtils.TokenToJObject(token);
             });
 
             await context.SendResponse(HttpStatusCode.OK, result);
