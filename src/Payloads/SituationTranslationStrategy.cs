@@ -1,7 +1,9 @@
 namespace SHRestAPI.Payloads
 {
     using System.Linq;
+    using HarmonyLib;
     using Newtonsoft.Json.Linq;
+    using SecretHistories.Commands;
     using SecretHistories.Commands.SituationCommands;
     using SecretHistories.Entities;
     using SecretHistories.Enums;
@@ -127,7 +129,7 @@ namespace SHRestAPI.Payloads
         {
             var hasRecipe = !string.IsNullOrEmpty(value);
 
-            Recipe recipe = hasRecipe ? Watchman.Get<Compendium>().GetEntityById<Recipe>(value) : null;
+            var recipe = hasRecipe ? Watchman.Get<Compendium>().GetEntityById<Recipe>(value) : null;
             if (hasRecipe && !recipe.IsValid())
             {
                 throw new BadRequestException($"Recipe ID {value} not found.");
@@ -181,12 +183,52 @@ namespace SHRestAPI.Payloads
         public string GetCurrentRecipeId(Situation situation)
         {
             var currentRecipe = situation.GetCurrentRecipe();
-            if (currentRecipe == null || currentRecipe.IsValid())
+            if (currentRecipe == null || !currentRecipe.IsValid())
             {
                 return null;
             }
 
             return currentRecipe.Id;
+        }
+
+        /// <summary>
+        /// Sets the current recipe ID of the situation.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <param name="recipeId">The recipe id.</param>
+        [JsonPropertySetter("currentRecipeId")]
+        public void SetCurrentRecipeId(Situation situation, string recipeId)
+        {
+            var hasRecipe = !string.IsNullOrEmpty(recipeId);
+            var recipe = hasRecipe ? Watchman.Get<Compendium>().GetEntityById<Recipe>(recipeId) : null;
+            if (hasRecipe && !recipe.IsValid())
+            {
+                throw new BadRequestException($"Recipe ID {recipeId} not found.");
+            }
+
+            if (situation.State.Identifier != StateEnum.Unstarted)
+            {
+                throw new ConflictException("Cannot set current recipe ID when situation is not idle.");
+            }
+
+            if (recipe != null)
+            {
+                // This is loosely based off the method that ambit recipes use
+                // to override the pending recipe on selection.
+                // See Situation.OverrideCurrentRecipeForUnstarted
+                if (situation.GetRevertToRecipe() == null)
+                {
+                    situation.SetRevertToRecipe(situation.GetCurrentRecipe());
+                }
+
+                situation.SetCurrentRecipe(recipe);
+                situation.ReceiveNote(RecipeNote.StartDescription(recipe, situation, false), Context.Metafictional());
+
+            }
+            else
+            {
+                situation.TryRevertToOriginalRecipe();
+            }
         }
 
         /// <summary>
@@ -198,7 +240,7 @@ namespace SHRestAPI.Payloads
         public string GetCurrentRecipeLabel(Situation situation)
         {
             var currentRecipe = situation.GetCurrentRecipe();
-            if (currentRecipe == null || currentRecipe.IsValid())
+            if (currentRecipe == null || !currentRecipe.IsValid())
             {
                 return null;
             }
