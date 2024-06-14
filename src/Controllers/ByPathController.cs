@@ -392,6 +392,12 @@ namespace SHRestAPI.Controllers
                     throw new NotFoundException($"No situation found at path \"{path}\".");
                 }
 
+                if (string.IsNullOrEmpty(payload.RecipeId))
+                {
+                    situation.TryRevertToOriginalRecipe();
+                    return;
+                }
+
                 var recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(payload.RecipeId);
                 if (recipe == null || !recipe.IsValid())
                 {
