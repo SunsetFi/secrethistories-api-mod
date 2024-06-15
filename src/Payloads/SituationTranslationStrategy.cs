@@ -135,15 +135,15 @@ namespace SHRestAPI.Payloads
                 throw new BadRequestException($"Recipe ID {value} not found.");
             }
 
-            if (situation.StateIdentifier == SecretHistories.Enums.StateEnum.Ongoing)
+            if (situation.StateIdentifier == StateEnum.Ongoing)
             {
                 var nullRecipe = NullRecipe.Create();
 
-                situation.State = SituationState.Rehydrate(SecretHistories.Enums.StateEnum.Unstarted, situation);
+                situation.State = SituationState.Rehydrate(StateEnum.Unstarted, situation);
                 situation.SetRecipeActive(nullRecipe);
                 situation.SetCurrentRecipe(nullRecipe);
             }
-            else if (situation.StateIdentifier != SecretHistories.Enums.StateEnum.Unstarted)
+            else if (situation.StateIdentifier != StateEnum.Unstarted)
             {
                 throw new ConflictException($"Cannot set fallback recipe ID when situation is in state {situation.StateIdentifier}.");
             }
@@ -213,17 +213,7 @@ namespace SHRestAPI.Payloads
 
             if (recipe != null)
             {
-                // This is loosely based off the method that ambit recipes use
-                // to override the pending recipe on selection.
-                // See Situation.OverrideCurrentRecipeForUnstarted
-                if (situation.GetRevertToRecipe() == null)
-                {
-                    situation.SetRevertToRecipe(situation.GetCurrentRecipe());
-                }
-
-                situation.SetCurrentRecipe(recipe);
-                situation.ReceiveNote(RecipeNote.StartDescription(recipe, situation, false), Context.Metafictional());
-
+                situation.OverrideCurrentRecipeForUnstarted(recipe);
             }
             else
             {

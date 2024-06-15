@@ -100,5 +100,11 @@ namespace SHRestAPI.Payloads
         {
             return recipe.Effects;
         }
+
+        [JsonPropertyGetter("craftable")]
+        public bool GetCraftable(Recipe recipe)
+        {
+            return recipe.Craftable;
+        }
     }
 }

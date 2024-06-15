@@ -7,11 +7,13 @@ namespace SHRestAPI.Controllers
     using Newtonsoft.Json.Linq;
 #if BH
     using SecretHistories.Commands;
+    using SecretHistories.Commands.SituationCommands;
 #endif
     using SecretHistories.Entities;
     using SecretHistories.Enums;
 #if BH
     using SecretHistories.Spheres;
+    using SecretHistories.States;
     using SecretHistories.Tokens.Payloads;
 #endif
     using SecretHistories.UI;
@@ -372,7 +374,6 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK);
         }
 
-#if BH
         /// <summary>
         /// Sets the recipe of the unstarted situation at the given path.
         /// </summary>
@@ -392,29 +393,55 @@ namespace SHRestAPI.Controllers
                     throw new NotFoundException($"No situation found at path \"{path}\".");
                 }
 
-                if (string.IsNullOrEmpty(payload.RecipeId))
+                var hasRecipe = !string.IsNullOrEmpty(payload.RecipeId);
+                Recipe recipe = null;
+                if (hasRecipe)
                 {
-                    situation.TryRevertToOriginalRecipe();
-                    return;
+                    recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(payload.RecipeId);
+                    if (recipe == null || !recipe.IsValid())
+                    {
+                        throw new BadRequestException($"No recipe found with id \"{payload.RecipeId}\".");
+                    }
                 }
 
-                var recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(payload.RecipeId);
-                if (recipe == null || !recipe.IsValid())
-                {
-                    throw new BadRequestException($"No recipe found with id \"{payload.RecipeId}\".");
-                }
-
-                if (situation.StateIdentifier != StateEnum.Unstarted)
+                if (payload.RequireState.HasValue && situation.StateIdentifier != payload.RequireState.Value)
                 {
                     throw new ConflictException($"Situation {situation.VerbId} is not in the correct state to set a recipe.");
                 }
 
-                situation.OverrideCurrentRecipeForUnstarted(recipe);
+                if (situation.StateIdentifier == StateEnum.Unstarted)
+                {
+                    if (hasRecipe)
+                    {
+                        situation.OverrideCurrentRecipeForUnstarted(recipe);
+                    }
+                    else
+                    {
+                        situation.TryRevertToOriginalRecipe();
+                    }
+                }
+                else if (situation.StateIdentifier == StateEnum.Ongoing)
+                {
+                    var nullRecipe = NullRecipe.Create();
+
+                    situation.State = SituationState.Rehydrate(StateEnum.Unstarted, situation);
+                    situation.SetRecipeActive(nullRecipe);
+                    situation.SetCurrentRecipe(nullRecipe);
+
+                    if (hasRecipe)
+                    {
+                        situation.CommandQueue.RemoveAll(x => x is TryActivateRecipeCommand);
+                        situation.CommandQueue.Add(new TryActivateRecipeCommand(recipe.Id));
+                    }
+                }
+                else
+                {
+                    throw new ConflictException($"Situation {situation.VerbId} is not in the correct state to set a recipe.");
+                }
             });
 
             await context.SendResponse(HttpStatusCode.OK);
         }
-#endif
 
         /// <summary>
         /// Executes the recipe of the situation at the given path.
