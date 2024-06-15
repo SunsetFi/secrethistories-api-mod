@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using System.Linq;
     using HarmonyLib;
     using Newtonsoft.Json.Linq;
@@ -90,6 +91,20 @@ namespace SHRestAPI.Payloads
                 return new JObject[0];
             }
         }
+
+#if BH
+        [JsonPropertyGetter("openAmbitRecipeIds")]
+        public List<string> GetOpenAmbitRecipeIds(Situation situation)
+        {
+            return situation.CurrentOpenAmbitRelevantRecipes().Select(x => x.Id).ToList();
+        }
+
+        [JsonPropertyGetter("lockedAmbitRecipeIds")]
+        public List<string> GetLockedAmbitRecipeIds(Situation situation)
+        {
+            return situation.CurrentLockedAmbitRelevantRecipes().Select(x => x.Id).ToList();
+        }
+#endif
 
         /// <summary>
         /// Gets the time remaining in the situation's current recipe.

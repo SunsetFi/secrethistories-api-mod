@@ -374,6 +374,37 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK);
         }
 
+#if BH
+        [WebRouteMethod(Method = "GET", Path = "**path/ambit-recipes")]
+        public async Task GetAmbitRecipesAtPath(IHttpContext context, string path)
+        {
+            var payload = await Dispatcher.DispatchRead(() =>
+            {
+                var token = this.WebSafeParse(path).GetToken();
+                if (token == null || token.Payload is not Situation situation)
+                {
+                    throw new NotFoundException($"No situation found at path \"{path}\".");
+                }
+
+                if (situation.State.Identifier != StateEnum.Unstarted)
+                {
+                    throw new ConflictException("Can only fetch ambit recipes for unstarted situations.");
+                }
+
+                var open = situation.CurrentOpenAmbitRelevantRecipes();
+                var locked = situation.CurrentLockedAmbitRelevantRecipes();
+
+                return new AmbitRecipesPayload
+                {
+                    openAmbitRecipeIds = open.Select(x => x.Id).ToList(),
+                    lockedAmbitRecipeIds = locked.Select(x => x.Id).ToList(),
+                };
+            });
+
+            await context.SendResponse(HttpStatusCode.OK, payload);
+        }
+#endif
+
         /// <summary>
         /// Sets the recipe of the unstarted situation at the given path.
         /// </summary>
