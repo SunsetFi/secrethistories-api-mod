@@ -146,7 +146,7 @@ namespace SHRestAPI.Controllers
                     throw new NotFoundException($"Verb with id {verbId} not found.");
                 }
 
-                var sprite = ResourcesManager.GetSpriteForVerbLarge(verbId);
+                var sprite = ResourcesManager.GetSpriteForVerbLarge(verb.Icon ?? verb.Id);
                 return sprite.ToTexture().EncodeToPNG();
             });
 
