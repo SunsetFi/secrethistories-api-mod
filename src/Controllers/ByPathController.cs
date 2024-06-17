@@ -302,6 +302,7 @@ namespace SHRestAPI.Controllers
                 }
             });
 
+            await Settler.AwaitSettled();
             await context.SendResponse(HttpStatusCode.OK);
         }
 
