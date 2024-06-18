@@ -46,12 +46,12 @@ namespace SHRestAPI.Controllers
         /// Hydrates the game state in a new game.
         /// </summary>
         /// <param name="context">The HTTP request context.</param>
+        /// <param name="body">The payload for hydrating the game state.</param>
         /// <returns>A task that completes when the request is handled.</returns>
         [WebRouteMethod(Method = "PUT")]
-        public async Task HydrateGameState(IHttpContext context)
+        public async Task HydrateGameState(IHttpContext context, HydrateGameStatePayload body)
         {
-            var payload = context.ParseBody<HydrateGameStatePayload>();
-            payload.Validate();
+            body.Validate();
 
             await Dispatcher.DispatchWrite(() =>
             {
@@ -59,7 +59,7 @@ namespace SHRestAPI.Controllers
 
                 // Switch scenes without using LoadGameOnTabletop.
                 // Bit janky, but we would need to await the fades, and LoadGameOnTabletop doesn't return a task.
-                stageHand.UsePersistenceProvider(payload.Provider);
+                stageHand.UsePersistenceProvider(body.Provider);
 
                 // Roslyn says 'new object[]' can be simplified to '[]'.  Don't believe its lies.  Apparently our csproj doesn't support that.
                 typeof(StageHand).GetMethod("SceneChange", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(stageHand, new object[] { Watchman.Get<Compendium>().GetSingleEntity<Dictum>().PlayfieldScene, false });
@@ -103,16 +103,16 @@ namespace SHRestAPI.Controllers
         /// Starts a new legacy.
         /// </summary>
         /// <param name="context">The HTTP request context.</param>
+        /// <param name="body">The payload for starting a new legacy.</param>
         /// <returns>A task that completes when the request is handled.</returns>
         [WebRouteMethod(Method = "PUT", Path = "legacy")]
-        public async Task StartNewLegacy(IHttpContext context)
+        public async Task StartNewLegacy(IHttpContext context, StartNewLegacyPayload body)
         {
-            var payload = context.ParseBody<StartNewLegacyPayload>();
-            payload.Validate();
+            body.Validate();
 
             await Dispatcher.DispatchWrite(() =>
             {
-                var provider = new FreshGameProvider(payload.Legacy);
+                var provider = new FreshGameProvider(body.Legacy);
                 var stageHand = Watchman.Get<StageHand>();
 
                 // Switch scenes without using LoadGameOnTabletop.

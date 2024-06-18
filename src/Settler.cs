@@ -15,6 +15,7 @@ namespace SHRestAPI
         /// <returns>A task that resolves when the tabletop scene has loaded.</returns>
         public static async Task AwaitGameReady()
         {
+            // TODO: We should detect if there are errors.  This might halt forever if the save fails to load.
             while (await IsGameStarted() == false)
             {
                 await Task.Delay(100);

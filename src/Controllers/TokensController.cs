@@ -97,9 +97,8 @@ namespace SHRestAPI.Controllers
         /// <param name="tokenId">The id of the token to update.</param>
         /// <returns>A task that resolves when the request has been handled.</returns>
         [WebRouteMethod(Method = "PATCH", Path = ":tokenId")]
-        public async Task UpdateToken(IHttpContext context, string tokenId)
+        public async Task UpdateToken(IHttpContext context, string tokenId, JObject body)
         {
-            var payload = context.ParseBody<JObject>();
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 var token = TokenUtils.GetAllTokens().FirstOrDefault(t => t.PayloadId == tokenId);
@@ -108,7 +107,7 @@ namespace SHRestAPI.Controllers
                     throw new NotFoundException($"Token {tokenId} not found.");
                 }
 
-                TokenUtils.UpdateToken(payload, token);
+                TokenUtils.UpdateToken(body, token);
 
                 return TokenUtils.TokenToJObject(token);
             });

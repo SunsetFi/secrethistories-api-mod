@@ -73,12 +73,11 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="path">The path of the item.</param>
+        /// <param name="body">The new data for the item.</param>
         /// <returns>A task that resolves once the request is completed.</returns>
         [WebRouteMethod(Method = "PATCH", Path = "**path")]
-        public async Task UpdateItemAtPath(IHttpContext context, string path)
+        public async Task UpdateItemAtPath(IHttpContext context, string path, JObject body)
         {
-            var body = context.ParseBody<JObject>();
-
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -411,32 +410,31 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="path">The path of the situation token.</param>
+        /// <param name="body">The payload of the request.</param>
         /// <returns>A task that resolves once the request is completed.</returns>
         [WebRouteMethod(Method = "POST", Path = "**path/recipe")]
-        public async Task SetRecipeAtPath(IHttpContext context, string path)
+        public async Task SetRecipeAtPath(IHttpContext context, string path, SetRecipePayload body)
         {
             await Dispatcher.DispatchWrite(() =>
             {
-                var payload = context.ParseBody<SetRecipePayload>();
-
                 var token = this.WebSafeParse(path).GetToken();
                 if (token == null || token.Payload is not Situation situation)
                 {
                     throw new NotFoundException($"No situation found at path \"{path}\".");
                 }
 
-                var hasRecipe = !string.IsNullOrEmpty(payload.RecipeId);
+                var hasRecipe = !string.IsNullOrEmpty(body.RecipeId);
                 Recipe recipe = null;
                 if (hasRecipe)
                 {
-                    recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(payload.RecipeId);
+                    recipe = Watchman.Get<Compendium>().GetEntityById<Recipe>(body.RecipeId);
                     if (recipe == null || !recipe.IsValid())
                     {
-                        throw new BadRequestException($"No recipe found with id \"{payload.RecipeId}\".");
+                        throw new BadRequestException($"No recipe found with id \"{body.RecipeId}\".");
                     }
                 }
 
-                if (payload.RequireState.HasValue && situation.StateIdentifier != payload.RequireState.Value)
+                if (body.RequireState.HasValue && situation.StateIdentifier != body.RequireState.Value)
                 {
                     throw new ConflictException($"Situation {situation.VerbId} is not in the correct state to set a recipe.");
                 }
@@ -598,11 +596,11 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="path">The path of the terrain token.</param>
+        /// <param name="body">The body of the request.</param>
         /// <returns>A task that resolves once the request is completed.</returns>
         [WebRouteMethod(Method = "POST", Path = "**path/unlock")]
-        public async Task UnlockTerrainAtPath(IHttpContext context, string path)
+        public async Task UnlockTerrainAtPath(IHttpContext context, string path, MaybeInstantPayload body)
         {
-            var payload = context.ParseBody<MaybeInstantPayload>();
             await Dispatcher.DispatchWrite(() =>
             {
                 var terrain = this.WebSafeParse(path).GetPayload<ConnectedTerrain>();
@@ -621,7 +619,7 @@ namespace SHRestAPI.Controllers
                     terrain.Unseal();
                 }
 
-                if (payload.Instant)
+                if (body.Instant)
                 {
                     terrain.Unshroud(true);
                 }

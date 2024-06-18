@@ -54,17 +54,17 @@ namespace SHRestAPI.Controllers
         /// Sets the game speed.
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="body">The payload for setting the game speed.</param>
         /// <returns>A task resolving when the request is completed.</returns>
         [WebRouteMethod(Method = "POST", Path = "speed")]
-        public async Task SetSpeed(IHttpContext context)
+        public async Task SetSpeed(IHttpContext context, SetSpeedPayload body)
         {
-            var payload = context.ParseBody<SetSpeedPayload>();
-            payload.Validate();
+            body.Validate();
 
             await Dispatcher.DispatchWrite(() =>
             {
                 var localNexus = Watchman.Get<LocalNexus>();
-                if (payload.GameSpeed == SecretHistories.Enums.GameSpeed.Paused)
+                if (body.GameSpeed == SecretHistories.Enums.GameSpeed.Paused)
                 {
                     // Pause the game at the user's pause level.
                     localNexus.PauseGame(true);
@@ -77,7 +77,7 @@ namespace SHRestAPI.Controllers
                     var controlEventArgs = new SpeedControlEventArgs()
                     {
                         ControlPriorityLevel = 1,
-                        GameSpeed = payload.GameSpeed,
+                        GameSpeed = body.GameSpeed,
                     };
                     localNexus.SpeedControlEvent.Invoke(controlEventArgs);
                 }
@@ -92,12 +92,12 @@ namespace SHRestAPI.Controllers
         /// Sets the fixed beat time.
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="body">The request body.</param>
         /// <returns>A task resolving when the request is completed.</returns>
         [WebRouteMethod(Method = "POST", Path = "beat")]
-        public async Task ElapseFixedBeat(IHttpContext context)
+        public async Task ElapseFixedBeat(IHttpContext context, PassTimePayload body)
         {
-            var payload = context.ParseBody<PassTimePayload>();
-            payload.Validate();
+            body.Validate();
 
             var nexus = Watchman.Get<LocalNexus>();
             var heart = Watchman.Get<Heart>();
@@ -107,7 +107,7 @@ namespace SHRestAPI.Controllers
             await Dispatcher.DispatchWrite(() => nexus.ForcePauseGame(false));
             try
             {
-                var timeRemaining = payload.Seconds;
+                var timeRemaining = body.Seconds;
                 while (timeRemaining > 0)
                 {
                     await Dispatcher.DispatchWrite(() =>
@@ -167,26 +167,26 @@ namespace SHRestAPI.Controllers
         /// Fast forwards to the next in-game event.
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
+        /// <param name="body">The payload for fast forwarding to the next event.</param>
         /// <returns>A task resolving when the request is completed.</returns>
         [WebRouteMethod(Method = "POST", Path = "events/beat")]
-        public async Task BeatNextEvent(IHttpContext context)
+        public async Task BeatNextEvent(IHttpContext context, BeatNextEventPayload body)
         {
-            var payload = context.ParseBody<BeatNextEventPayload>();
-            payload.Validate();
+            body.Validate();
 
             float timeToBeat = 0f;
 
             await Dispatcher.DispatchWrite(() =>
             {
-                if (payload.Event == "CardDecay")
+                if (body.Event == "CardDecay")
                 {
                     timeToBeat = GetNextCardTime();
                 }
-                else if (payload.Event == "RecipeCompletion")
+                else if (body.Event == "RecipeCompletion")
                 {
                     timeToBeat = GetNextVerbTime();
                 }
-                else if (payload.Event == "Either")
+                else if (body.Event == "Either")
                 {
                     timeToBeat = Math.Min(
                         GetNextCardTime().NanToDefault(float.PositiveInfinity),
