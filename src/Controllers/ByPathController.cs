@@ -396,8 +396,8 @@ namespace SHRestAPI.Controllers
 
                 return new AmbitRecipesPayload
                 {
-                    openAmbitRecipeIds = open.Select(x => x.Id).ToList(),
-                    lockedAmbitRecipeIds = locked.Select(x => x.Id).ToList(),
+                    OpenAmbitRecipeIds = open.Select(x => x.Id).ToList(),
+                    LockedAmbitRecipeIds = locked.Select(x => x.Id).ToList(),
                 };
             });
 

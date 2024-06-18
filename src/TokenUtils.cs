@@ -21,7 +21,7 @@ namespace SHRestAPI
         /// <remarks>
         /// This includes non-user spheres like the dealer's table.  Use with care.
         /// </remarks>
-        public static IEnumerable<Token> GetAllTokens()
+        public static IEnumerable<Token> GetAllTokens(Sphere sphere = null)
         {
             IEnumerable<Token> GetTokensDeep(Sphere sphere)
             {
@@ -39,11 +39,21 @@ namespace SHRestAPI
                 }
             }
 
-            foreach (var sphere in FucineRoot.Get().GetSpheres())
+            if (sphere != null)
             {
                 foreach (var token in GetTokensDeep(sphere))
                 {
                     yield return token;
+                }
+            }
+            else
+            {
+                foreach (var rootSphere in FucineRoot.Get().GetSpheres())
+                {
+                    foreach (var token in GetTokensDeep(rootSphere))
+                    {
+                        yield return token;
+                    }
                 }
             }
         }

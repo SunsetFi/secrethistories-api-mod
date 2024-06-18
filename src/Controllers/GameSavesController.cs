@@ -12,8 +12,11 @@ namespace SHRestAPI.Controllers
 
 #if BH
 
+    /// <summary>
+    /// Controller for listing and loading game saves.
+    /// </summary>
     [WebController(Path = "api/saves")]
-    class GameSavesController
+    public class GameSavesController
     {
         [WebRouteMethod(Method = "GET")]
         public async Task GetGameSaves(IHttpContext context)

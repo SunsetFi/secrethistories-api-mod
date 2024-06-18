@@ -7,6 +7,7 @@ namespace SHRestAPI
     using SecretHistories.Fucine;
     using SecretHistories.Spheres;
     using SecretHistories.UI;
+    using SHRestAPI.Server.Exceptions;
 
     /// <summary>
     /// Parses fucine path strings the hard way, by comparing against what actually exists at every step.
@@ -98,6 +99,27 @@ namespace SHRestAPI
         /// Gets the path parts that make up this path.
         /// </summary>
         public IReadOnlyList<FucinePathPart> PathParts { get; private set; }
+
+        /// <summary>
+        /// Parse a fucine path, emitting web exceptions for various error conditions.
+        /// </summary>
+        /// <param name="path">The path to parse.</param>
+        /// <returns>The parsed path.</returns>
+        public static SafeFucinePath WebSafeParse(string path)
+        {
+            try
+            {
+                return new SafeFucinePath(path);
+            }
+            catch (PathElementNotFoundException)
+            {
+                throw new NotFoundException($"No item found at fucine path \"{path}\".");
+            }
+            catch (SafeFucinePathException)
+            {
+                throw new BadRequestException($"Invalid fucine path \"{path}\".");
+            }
+        }
 
         private static Token ParseTokenFromPath(ref string path, Sphere from)
         {

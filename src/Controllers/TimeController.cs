@@ -226,8 +226,7 @@ namespace SHRestAPI.Controllers
                                 let payload = token.Payload
                                 let stack = payload as ElementStack
                                 where stack != null && stack.Decays
-                                // TODO: If our sphere has TokenHeartbeatIntervalMultiplier, apply it.
-                                orderby stack.LifetimeRemaining ascending
+                                orderby stack.LifetimeRemaining / sphere.TokenHeartbeatIntervalMultiplier ascending
                                 select stack;
 
             var found = elementStacks.FirstOrDefault();

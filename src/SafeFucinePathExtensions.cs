@@ -1,6 +1,7 @@
 namespace SHRestAPI
 {
     using System;
+    using System.Collections.Generic;
     using SecretHistories.Abstract;
     using SecretHistories.Spheres;
     using SecretHistories.UI;
@@ -42,6 +43,25 @@ namespace SHRestAPI
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Get all spheres at the specified path.
+        /// If the path is a token, the token's spheres will be returned.
+        /// If the path is a sphere, the sphere will be returned.
+        /// </summary>
+        /// <param name="path">The path to get the spheres at.</param>
+        /// <returns>The spheres at the path.</returns>
+        public static IEnumerable<Sphere> GetSpheresAtPath(this SafeFucinePath path)
+        {
+            if (path.TargetToken)
+            {
+                return path.TargetToken.Payload.GetSpheres();
+            }
+            else
+            {
+                return new Sphere[] { path.TargetSphere };
+            }
         }
 
         /// <summary>

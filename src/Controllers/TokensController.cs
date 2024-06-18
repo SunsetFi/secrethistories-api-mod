@@ -5,6 +5,7 @@ namespace SHRestAPI.Controllers
     using System.Threading.Tasks;
     using Newtonsoft.Json.Linq;
     using SecretHistories.Entities;
+    using SecretHistories.Spheres;
     using SecretHistories.UI;
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
@@ -29,8 +30,11 @@ namespace SHRestAPI.Controllers
             context.QueryString.TryGetValue("limit", out var limitStr);
             int.TryParse(limitStr, out var limit);
 
+            context.QueryString.TryGetValue("fucinePath", out var fucinePath);
+            string[] fucinePaths = string.IsNullOrEmpty(fucinePath) ? new string[0] : fucinePath.Split(",");
+
             context.QueryString.TryGetValue("spherePrefix", out var spherePrefix);
-            string[] spheres = string.IsNullOrEmpty(spherePrefix) ? new string[0] : spherePrefix.Split(",");
+            string[] spherePrefixes = string.IsNullOrEmpty(spherePrefix) ? new string[0] : spherePrefix.Split(",");
 
             context.QueryString.TryGetValue("payloadType", out var payloadType);
             string[] payloadTypes = string.IsNullOrEmpty(payloadType) ? new string[0] : payloadType.Split(",");
@@ -43,12 +47,28 @@ namespace SHRestAPI.Controllers
 
             var result = await Dispatcher.DispatchRead(() =>
             {
-                IEnumerable<Token> query = from token in TokenUtils.GetAllTokens()
-                                           where spheres.Length == 0 || spheres.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))
+                // This may throw web errors if paths are invalid.
+                var targetPaths = fucinePaths.Select(SafeFucinePath.WebSafeParse).ToArray();
+
+                IEnumerable<Sphere> fromSpheres = FucineRoot.Get().GetSpheres();
+                if (targetPaths.Length > 0)
+                {
+                    fromSpheres = from path in targetPaths
+                                  from sphere in path.GetSpheresAtPath()
+                                  select sphere;
+                }
+
+                // We want to consider tokens AT fucinePath to be part of the path.
+                // GetSpheresAtPath returns the pheres of that token, not the token itself.
+                // Note: If we have overlapping paths, we might get a token multiple times.
+                // We should probably run a final Distinct() on the result...
+                var targetTokens = fromSpheres.SelectMany(TokenUtils.GetAllTokens).Concat(targetPaths.Select(x => x.TargetToken).Where(x => x != null));
+
+                IEnumerable<Token> query = from token in targetTokens
+                                           where spherePrefixes.Length == 0 || spherePrefixes.Any(id => token.Sphere.GetAbsolutePath().Path.StartsWith(id))
                                            where payloadTypes.Length == 0 || payloadTypes.Any(type => token.PayloadTypeName == type)
                                            where elementIds.Length == 0 || (token.Payload is ElementStack elementStack && elementIds.Any(id => elementStack.Element.Id == id))
                                            where verbIds.Length == 0 || (token.Payload is Situation situation && verbIds.Any(id => situation.Verb.Id == id))
-                                           orderby token.PayloadId
                                            select token;
 
                 if (skip > 0)
@@ -70,10 +90,10 @@ namespace SHRestAPI.Controllers
         /// <summary>
         /// Gets a token by its id.
         /// </summary>
-        [WebRouteMethod(Method = "GET", Path = ":tokenId")]
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="tokenId">The id of the token to get.</param>
         /// <returns>A task that resolves when the request has been handled.</returns>
+        [WebRouteMethod(Method = "GET", Path = ":tokenId")]
         public async Task GetTokenById(IHttpContext context, string tokenId)
         {
             var result = await Dispatcher.DispatchRead(() =>
