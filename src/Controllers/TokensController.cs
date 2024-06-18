@@ -59,9 +59,7 @@ namespace SHRestAPI.Controllers
                 }
 
                 // We want to consider tokens AT fucinePath to be part of the path.
-                // GetSpheresAtPath returns the pheres of that token, not the token itself.
-                // Note: If we have overlapping paths, we might get a token multiple times.
-                // We should probably run a final Distinct() on the result...
+                // GetSpheresAtPath returns the spheres of that token, not the token itself.
                 var targetTokens = fromSpheres.SelectMany(TokenUtils.GetAllTokens).Concat(targetPaths.Select(x => x.TargetToken).Where(x => x != null));
 
                 IEnumerable<Token> query = from token in targetTokens
@@ -70,6 +68,9 @@ namespace SHRestAPI.Controllers
                                            where elementIds.Length == 0 || (token.Payload is ElementStack elementStack && elementIds.Any(id => elementStack.Element.Id == id))
                                            where verbIds.Length == 0 || (token.Payload is Situation situation && verbIds.Any(id => situation.Verb.Id == id))
                                            select token;
+
+                // If we have overlapping paths, we might get a token multiple times.
+                query = query.Distinct();
 
                 if (skip > 0)
                 {
@@ -81,6 +82,10 @@ namespace SHRestAPI.Controllers
                     query = query.Take(limit);
                 }
 
+                // This takes the most time by far.  We could parallelize this for greater effect.
+                // Except, we are pretending to be on the main thread with DispatchRead here, hmm...
+                // DispatchRead doesn't do anything currently... Maybe we should stop pretending
+                // and let this thing parallelize.
                 return query.Select(TokenUtils.TokenToJObject).ToArray();
             });
 
