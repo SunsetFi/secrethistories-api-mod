@@ -6,6 +6,8 @@ namespace SHRestAPI.Controllers
     using SecretHistories.Abstract;
     using SecretHistories.Commands.Encausting;
     using SecretHistories.Entities;
+    using SecretHistories.Enums;
+    using SecretHistories.Infrastructure;
     using SecretHistories.Infrastructure.Persistence;
     using SecretHistories.Services;
     using SecretHistories.UI;
@@ -112,21 +114,36 @@ namespace SHRestAPI.Controllers
 
             await Dispatcher.DispatchWrite(() =>
             {
-                var provider = new FreshGameProvider(body.Legacy);
+                var provider = new FreshPausedGameProvider(body.Legacy);
                 var stageHand = Watchman.Get<StageHand>();
 
                 // Switch scenes without using LoadGameOnTabletop.
                 // Bit janky, but we would need to await the fades, and LoadGameOnTabletop doesn't return a task.
                 stageHand.UsePersistenceProvider(provider);
 
+                // New way
+                Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(provider, Watchman.Get<StageHand>().GetForemostScene());
+
+                // Old way
                 // Roslyn says 'new object[]' can be simplified to '[]'.  Don't believe its lies.  Apparently our csproj doesn't support that.
-                typeof(StageHand).GetMethod("SceneChange", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(stageHand, new object[] { Watchman.Get<Compendium>().GetSingleEntity<Dictum>().PlayfieldScene, false });
+                // typeof(StageHand).GetMethod("SceneChange", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(stageHand, new object[] { Watchman.Get<Compendium>().GetSingleEntity<Dictum>().PlayfieldScene, false });
             });
 
             await Settler.AwaitGameReady();
+
             await Settler.AwaitSettled();
 
             await context.SendResponse(HttpStatusCode.OK);
+        }
+
+        private class FreshPausedGameProvider : FreshGameProvider
+        {
+            public FreshPausedGameProvider(Legacy legacy) : base(legacy) { }
+
+            public override GameSpeed GetDefaultGameSpeed()
+            {
+                return GameSpeed.Paused;
+            }
         }
     }
 }
