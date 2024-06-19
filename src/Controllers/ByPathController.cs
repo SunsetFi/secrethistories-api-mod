@@ -112,7 +112,7 @@ namespace SHRestAPI.Controllers
 
             await Settler.AwaitSettled();
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -270,7 +270,7 @@ namespace SHRestAPI.Controllers
         //         }
         //     });
         //     await Settler.AwaitSettled();
-        //     await context.SendResponse(HttpStatusCode.OK);
+        //     await context.SendResponse(HttpStatusCode.NoContent);
         // }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace SHRestAPI.Controllers
             });
 
             await Settler.AwaitSettled();
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
 #if BH
@@ -326,7 +326,7 @@ namespace SHRestAPI.Controllers
                 await BHCamera.FocusToken(token);
             });
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 #endif
 
@@ -371,7 +371,7 @@ namespace SHRestAPI.Controllers
 
             await Settler.AwaitSettled();
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
 #if BH
@@ -470,7 +470,7 @@ namespace SHRestAPI.Controllers
                 }
             });
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -637,7 +637,7 @@ namespace SHRestAPI.Controllers
 
             await Settler.AwaitSettled();
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 #endif
 

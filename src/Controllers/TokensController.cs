@@ -120,6 +120,7 @@ namespace SHRestAPI.Controllers
         /// </summary>
         /// <param name="context">The HTTP context of the request.</param>
         /// <param name="tokenId">The id of the token to update.</param>
+        /// <param name="body">The new token data.</param>
         /// <returns>A task that resolves when the request has been handled.</returns>
         [WebRouteMethod(Method = "PATCH", Path = ":tokenId")]
         public async Task UpdateToken(IHttpContext context, string tokenId, JObject body)

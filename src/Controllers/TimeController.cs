@@ -85,7 +85,7 @@ namespace SHRestAPI.Controllers
 
             await Settler.AwaitSettled();
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace SHRestAPI.Controllers
                 await Dispatcher.DispatchWrite(() => nexus.UnForcePauseGame(false));
             }
 
-            await context.SendResponse(HttpStatusCode.OK);
+            await context.SendResponse(HttpStatusCode.NoContent);
         }
 
         /// <summary>
