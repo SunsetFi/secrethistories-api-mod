@@ -75,8 +75,14 @@ namespace SHRestAPI.Payloads
             {
                 throw new BadRequestException($"No sphere found at path \"{path}\".");
             }
+            catch (SafeFucinePathException)
+            {
+                throw new BadRequestException($"Invalid path \"{path}\".");
+            }
 
-            if (fucinePath.TargetSphere == null)
+            var targetSphere = fucinePath.TargetSphere;
+
+            if (targetSphere == null)
             {
                 throw new BadRequestException($"No sphere found at path \"{path}\".");
             }
@@ -89,8 +95,17 @@ namespace SHRestAPI.Payloads
                 throw new ConflictException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} is not in an exterior sphere.");
             }
 
+            if (currentSphere == targetSphere)
+            {
+                return;
+            }
+
             token.RequestHomeLocationFromCurrentSphere();
-            if (!fucinePath.TargetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)))
+
+            // Book of Hours is returning false here for successful slots.
+            // This happens reliably in oriflamme's auction slot, as well as when slotting the soul card for considering a book.
+            // It still takes, so check to see if its in there.
+            if (!targetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)) && token.Sphere != targetSphere)
             {
                 throw new BadRequestException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} could not be moved to sphere \"{path}\".");
             }
