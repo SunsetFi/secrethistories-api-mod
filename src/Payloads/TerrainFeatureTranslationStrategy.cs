@@ -113,8 +113,9 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("infoRecipeId")]
         public string GetInfoRecipe(TerrainFeature terrain)
         {
-            const infoRecipe = terrain.GetInfoRecipe();
-            if (!infoRecipe || !infoRecipe.Isvalid()) {
+            var infoRecipe = terrain.GetInfoRecipe();
+            if (infoRecipe == null || !infoRecipe.IsValid())
+            {
                 return null;
             }
 
