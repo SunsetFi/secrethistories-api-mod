@@ -1,6 +1,7 @@
 namespace SHRestAPI.Payloads
 {
     using SecretHistories.Abstract;
+    using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
     using SHRestAPI.Server.Exceptions;
     using static SHRestAPI.SafeFucinePath;
@@ -89,10 +90,15 @@ namespace SHRestAPI.Payloads
 
             var token = payload.GetToken();
 
+            if (!targetSphere.IsValidDestinationForToken(token))
+            {
+                throw new BadRequestException($"The sphere at \"{path}\" is not a valid destination for the token {token.PayloadTypeName} {token.PayloadEntityId}.");
+            }
+
             var currentSphere = token.Sphere;
             if (!currentSphere.IsExteriorSphere)
             {
-                throw new ConflictException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} is not in an exterior sphere.");
+                throw new ConflictException($"The token {token.PayloadTypeName} {token.PayloadEntityId} cannot be moved as it is not in an exterior sphere.");
             }
 
             if (currentSphere == targetSphere)
@@ -102,12 +108,19 @@ namespace SHRestAPI.Payloads
 
             token.RequestHomeLocationFromCurrentSphere();
 
-            // Book of Hours is returning false here for successful slots.
-            // This happens reliably in oriflamme's auction slot, as well as when slotting the soul card for considering a book.
-            // It still takes, so check to see if its in there.
-            if (!targetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)) && token.Sphere != targetSphere)
+            if (targetSphere is ThresholdSphere && token.Payload.Quantity > 1)
             {
-                throw new BadRequestException($"The ITokenPayload {token.PayloadTypeName} {token.PayloadEntityId} could not be moved to sphere \"{path}\".");
+                // We are targeting a threshold sphere, so only 1 can go in.
+                // We cannot return a 'new' token from this property setter, so calve off the entire stack
+                // and slot the one remaining token
+                var remainder = token.CalveToken(token.Payload.Quantity - 1);
+                remainder.HomeLocation = token.HomeLocation;
+                remainder.GetHomeSphere().AcceptToken(remainder, new Context(Context.ActionSource.CalvedStack));
+            }
+
+            if (!targetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)))
+            {
+                throw new BadRequestException($"The token {token.PayloadTypeName} {token.PayloadEntityId} could not be moved to sphere \"{path}\".");
             }
         }
 
