@@ -567,7 +567,6 @@ namespace SHRestAPI.Controllers
                         throw new ConflictException("Wisdom tree node could not commit to the input.");
                     }
 
-
                     return new
                     {
                         executedRecipeId = commitRecipe.Id,
