@@ -4,6 +4,7 @@ namespace SHRestAPI.Controllers
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using HarmonyLib;
     using Newtonsoft.Json.Linq;
 #if BH
     using SecretHistories.Commands;
@@ -539,6 +540,39 @@ namespace SHRestAPI.Controllers
                         executedRecipeId = fallbackRecipe.Id,
                         executedRecipeLabel = fallbackRecipe.Label,
                         timeRemaining = unlockSituation.TimeRemaining,
+                    };
+                }
+                else if (token.Payload is WisdomNodeTerrain wisdom)
+                {
+                    var inputSphere = Traverse.Create(wisdom).Field<Sphere>("inputSphere").Value;
+                    var inputToken = inputSphere.Tokens.FirstOrDefault();
+                    if (inputToken == null)
+                    {
+                        throw new ConflictException("Cannot commit to a wisdom node without an input.");
+                    }
+
+                    var commitRecipe = wisdom.GetCurrentCommitmentRecipe();
+                    if (commitRecipe == null || !commitRecipe.IsValid())
+                    {
+                        throw new ConflictException("Wisdom tree node cannot accept the current input.");
+                    }
+
+                    // The token arg is actually not used, but we reproduce the game's behavior here anyway.
+                    wisdom.TryCommitToken(inputToken);
+
+                    // Check to see if we succeeded.
+                    var commitmentSphere = Traverse.Create(wisdom).Field<CommitmentSphere>("commitmentSphere").Value;
+                    if (!commitmentSphere.Tokens.Any())
+                    {
+                        throw new ConflictException("Wisdom tree node could not commit to the input.");
+                    }
+
+
+                    return new
+                    {
+                        executedRecipeId = commitRecipe.Id,
+                        executedRecipeLabel = commitRecipe.Label,
+                        timeRemaining = 0.0f,
                     };
                 }
 #endif
