@@ -250,29 +250,38 @@ namespace SHRestAPI.Controllers
         /// <param name="path">The path of the sphere.</param>
         /// <returns>A task that resolves once the request is completed.</returns>
         /// <exception cref="NotFoundException">The sphere was not found.</exception>
-        // [WebRouteMethod(Method = "DELETE", Path = "**path/tokens")]
-        // public async Task DeleteAllTokensAtPath(IHttpContext context, string path)
-        // {
-        //     await Dispatcher.RunOnMainThread(() =>
-        //     {
-        //         var sphere = Watchman.Get<HornedAxe>().GetSphereByReallyAbsolutePathOrNullSphere(WebSafeParse(path));
-        //         if (sphere == null || !sphere.IsValid())
-        //         {
-        //             throw new NotFoundException($"No sphere found at path \"{path}\".");
-        //         }
-        //         foreach (var token in sphere.Tokens.ToArray())
-        //         {
-        //             // Don't delete things we dont care about.
-        //             // This is mostly for dropzones.
-        //             if (token.Payload is ElementStack || token.Payload is Situation)
-        //             {
-        //                 token.Retire();
-        //             }
-        //         }
-        //     });
-        //     await Settler.AwaitSettled();
-        //     await context.SendResponse(HttpStatusCode.NoContent);
-        // }
+        [WebRouteMethod(Method = "DELETE", Path = "**path/tokens")]
+        public async Task DeleteAllTokensAtPath(IHttpContext context, string path)
+        {
+            await Dispatcher.RunOnMainThread(() =>
+            {
+                var parsed = SafeFucinePath.WebSafeParse(path);
+                if (!parsed.TargetSphere)
+                {
+                    throw new BadRequestException("Cannot delete tokens of a token.");
+                }
+
+                var sphere = parsed.TargetSphere;
+                if (sphere == null || !sphere.IsValid())
+                {
+                    throw new NotFoundException($"No sphere found at path \"{path}\".");
+                }
+
+                foreach (var token in sphere.Tokens.ToArray())
+                {
+                    // Don't delete things we dont care about.
+                    // Now that Book of Hours is around, there are a lot more possibilities (workstations, terrains, ....),
+                    // and none of them should be deleted.
+                    // Note that this is quite dangerous in Book of Hours anyway, as critical things like our time passing are situations.
+                    if (token.Payload is ElementStack || token.Payload is Situation)
+                    {
+                        token.Retire();
+                    }
+                }
+            });
+            await Settler.AwaitSettled();
+            await context.SendResponse(HttpStatusCode.NoContent);
+        }
 
         /// <summary>
         /// Evict the token at the given path.

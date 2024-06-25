@@ -117,7 +117,7 @@ namespace SHRestAPI
         /// </summary>
         /// <param name="action">The action to run.</param>
         /// <returns>A task that completes when the action has finished.</returns>
-        private static Task RunOnMainThread(Action action)
+        public static Task RunOnMainThread(Action action)
         {
             return RunOnMainThread<object>(() =>
             {

@@ -1,5 +1,6 @@
 namespace SHRestAPI.Payloads
 {
+    using System.Collections.Generic;
     using System.Linq;
     using HarmonyLib;
     using SecretHistories.Entities;
@@ -15,6 +16,51 @@ namespace SHRestAPI.Payloads
     [JsonTranslatorTarget(typeof(WisdomNodeTerrain))]
     public class WisdomNodeTerrainTranslationStrategy
     {
+        /// <summary>
+        /// Gets the required unlock aspects for the wisdom skill.
+        /// </summary>
+        [JsonPropertyGetter("wisdomSkillRequirements")]
+        public IDictionary<string, int> GetEssentialSkillRequirements(WisdomNodeTerrain terrain)
+        {
+            var spec = Traverse.Create(terrain).Field<Sphere>("inputSphere").Value.GoverningSphereSpec;
+            if (spec == null)
+            {
+                return new Dictionary<string, int>();
+            }
+
+            return spec.Required.ToDictionary(aspect => aspect.Key, aspect => aspect.Value);
+        }
+
+        /// <summary>
+        /// Gets the forbidden unlock aspects for the wisdom skill.
+        /// </summary>
+        [JsonPropertyGetter("wisdomSkillForbiddens")]
+        public IDictionary<string, int> GetWisdomSkillForbiddens(WisdomNodeTerrain terrain)
+        {
+            var spec = Traverse.Create(terrain).Field<Sphere>("inputSphere").Value.GoverningSphereSpec;
+            if (spec == null)
+            {
+                return new Dictionary<string, int>();
+            }
+
+            return spec.Forbidden.ToDictionary(aspect => aspect.Key, aspect => aspect.Value);
+        }
+
+        /// <summary>
+        /// Gets the essential unlock aspects for the wisdom skill.
+        /// </summary>
+        [JsonPropertyGetter("wisdomSkillEssentials")]
+        public IDictionary<string, int> GetWisdomSkillEssentials(WisdomNodeTerrain terrain)
+        {
+            var spec = Traverse.Create(terrain).Field<Sphere>("inputSphere").Value.GoverningSphereSpec;
+            if (spec == null)
+            {
+                return new Dictionary<string, int>();
+            }
+
+            return spec.Essential.ToDictionary(aspect => aspect.Key, aspect => aspect.Value);
+        }
+
         /// <summary>
         /// Gets recipe slotted into the wisdom node, if any.
         /// </summary>
