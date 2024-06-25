@@ -13,6 +13,7 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.Payloads;
     using SHRestAPI.Server;
     using SHRestAPI.Server.Attributes;
+    using SHRestAPI.Server.Exceptions;
 
     /// <summary>
     /// Controller for interacting with the game state as a whole.
@@ -54,21 +55,36 @@ namespace SHRestAPI.Controllers
         {
             body.Validate();
 
-            await Dispatcher.DispatchWrite(() =>
+            var awaitReady = await Dispatcher.DispatchWrite(() =>
             {
                 var stageHand = Watchman.Get<StageHand>();
 
-                // Switch scenes without using LoadGameOnTabletop.
-                // Bit janky, but we would need to await the fades, and LoadGameOnTabletop doesn't return a task.
-                stageHand.UsePersistenceProvider(body.Provider);
+                var source = body.Provider;
 
-                // Roslyn says 'new object[]' can be simplified to '[]'.  Don't believe its lies.  Apparently our csproj doesn't support that.
-                typeof(StageHand).GetMethod("SceneChange", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(stageHand, new object[] { Watchman.Get<Compendium>().GetSingleEntity<Dictum>().PlayfieldScene, false });
+                if (source.IsSaveCorrupted())
+                {
+                    throw new UnprocessableEntityException("Save file is corrupted.");
+                }
+
+                stageHand.UsePersistenceProvider(source);
+
+                if (source.GetCharacterState() == CharacterState.Extinct)
+                {
+                    Watchman.Get<StageHand>().NewGameScreen();
+                    return false;
+                }
+                else
+                {
+                    Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(source, Watchman.Get<StageHand>().GetForemostScene());
+                    return true;
+                }
             });
 
-            await Settler.AwaitGameReady();
-
-            await Settler.AwaitSettled();
+            if (awaitReady)
+            {
+                await Settler.AwaitGameReady();
+                await Settler.AwaitSettled();
+            }
 
             await context.SendResponse(HttpStatusCode.NoContent);
         }

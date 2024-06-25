@@ -31,12 +31,14 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK, result);
         }
 
-        [WebRouteMethod(Method = "POST")]
+        // TODO: POST to api/saves should create a new save.
+
+        [WebRouteMethod(Method = "POST", Path = "current-save")]
         public async Task LoadGameSave(IHttpContext context, LoadSavePayload body)
         {
             body.Validate();
 
-            await Dispatcher.DispatchWrite(() =>
+            var awaitReady = await Dispatcher.DispatchWrite(() =>
             {
                 // Recreation of SaveLoadPanel.LoadSelectedSave
                 var source = new NamedGamePersistenceProvider(body.SaveName);
@@ -51,16 +53,20 @@ namespace SHRestAPI.Controllers
                 if (source.GetCharacterState() == SecretHistories.Enums.CharacterState.Extinct)
                 {
                     Watchman.Get<StageHand>().NewGameScreen();
+                    return false;
                 }
                 else
                 {
                     Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(source, Watchman.Get<StageHand>().GetForemostScene());
+                    return true;
                 }
             });
 
-            await Settler.AwaitGameReady();
-
-            await Settler.AwaitSettled();
+            if (awaitReady)
+            {
+                await Settler.AwaitGameReady();
+                await Settler.AwaitSettled();
+            }
 
             await context.SendResponse(HttpStatusCode.NoContent);
         }

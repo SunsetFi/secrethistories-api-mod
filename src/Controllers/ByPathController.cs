@@ -645,10 +645,16 @@ namespace SHRestAPI.Controllers
         {
             await Dispatcher.DispatchWrite(() =>
             {
-                var terrain = this.WebSafeParse(path).GetPayload<ConnectedTerrain>();
+                var parsed = SafeFucinePath.WebSafeParse(path);
+                if (!parsed.TargetToken)
+                {
+                    throw new BadRequestException($"The path \"{path}\" does not point to a token.");
+                }
+
+                var terrain = parsed.TargetToken.Payload as ConnectedTerrain;
                 if (terrain == null)
                 {
-                    throw new NotFoundException($"No terrain found at path \"{path}\".");
+                    throw new BadRequestException($"The token at path \"{path}\" is not a ConnectedTerrain.");
                 }
 
                 if (!terrain.IsShrouded)
