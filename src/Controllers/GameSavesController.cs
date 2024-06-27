@@ -62,8 +62,6 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.NoContent);
         }
 
-        // TODO: POST to api/saves should create a new save.
-
         [WebRouteMethod(Method = "POST", Path = "current-save")]
         public async Task LoadGameSave(IHttpContext context, LoadSavePayload body)
         {
