@@ -11,6 +11,8 @@ namespace SHRestAPI.Tasks
     {
         private readonly Func<bool> condition;
 
+        private bool isDisposed = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AwaitConditionTask"/> class.
         /// </summary>
@@ -21,6 +23,14 @@ namespace SHRestAPI.Tasks
         {
             this.condition = condition;
             GameEventSource.GameEnded += this.HandleGameEnded;
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="AwaitConditionTask"/> class.
+        /// </summary>
+        ~AwaitConditionTask()
+        {
+            this.Dispose();
         }
 
         /// <summary>
@@ -39,21 +49,42 @@ namespace SHRestAPI.Tasks
         {
             if (this.condition())
             {
-                GameEventSource.GameEnded -= this.HandleGameEnded;
-                this.SetResult(true);
+                try
+                {
+                    this.SetResult(true);
+                }
+                finally
+                {
+                    this.Dispose();
+                }
             }
         }
 
         /// <inheritdoc/>
         protected override void OnDisposed()
         {
+            if (this.isDisposed)
+            {
+                return;
+            }
+
+            this.isDisposed = true;
+
+            base.OnDisposed();
+
             GameEventSource.GameEnded -= this.HandleGameEnded;
         }
 
         private void HandleGameEnded(object sender, EventArgs e)
         {
-            GameEventSource.GameEnded -= this.HandleGameEnded;
-            this.SetException(new Exception("Game ended while awaiting AwaitConditionTask."));
+            try
+            {
+                this.SetException(new Exception("Game ended while awaiting AwaitConditionTask."));
+            }
+            finally
+            {
+                this.Dispose();
+            }
         }
     }
 }

@@ -11,9 +11,6 @@ namespace SHRestAPI
     [BepInPlugin("com.robophred.secrethistories.shrestapi", "Secret Histories RESTAPI", "1.0.0.0")]
     public class SHRestAPIBepPlugin : BaseUnityPlugin
     {
-        /// <summary>
-        /// Gets the instance of the plugin.
-        /// </summary>
         public static ManualLogSource PublicLogger { get; private set; }
 
         /// <summary>

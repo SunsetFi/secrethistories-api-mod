@@ -1,7 +1,12 @@
 namespace SHRestAPI
 {
+    using System.Threading;
     using System.Threading.Tasks;
+    using SecretHistories.Entities;
+    using SecretHistories.Infrastructure;
     using SecretHistories.UI;
+    using SHRestAPI.Server.Exceptions;
+    using SHRestAPI.Tasks;
     using UnityEngine.SceneManagement;
 
     /// <summary>
@@ -10,15 +15,38 @@ namespace SHRestAPI
     public static class Settler
     {
         /// <summary>
-        /// Waits for the tabletop scene to be loaded.
+        /// Waits for the game to be loaded.
         /// </summary>
-        /// <returns>A task that resolves when the tabletop scene has loaded.</returns>
+        /// <returns>A task that resolves when the game has fully loaded.</returns>
         public static async Task AwaitGameReady()
         {
-            // TODO: We should detect if there are errors.  This might halt forever if the save fails to load.
-            while (await IsGameStarted() == false)
+            // Note: This may be null if we are called too soon.
+            // This should never happen, as we really shouldn't be requesting loads before the game has initialized its data.
+            // TODO: We may want to make this guarentee more robust, or actually await the load.
+            // However, if this is null, we will definitely not be in the process of loading a save, unless
+            // another request on another thread triggers it.
+            var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+            if (dictum == null)
             {
-                await Task.Delay(100);
+                throw new ConflictException("Game has not initialized.");
+            }
+
+            var gameScene = SceneManager.GetSceneByName(dictum.PlayfieldScene);
+
+            // First, await the game scene.
+            await AwaitConditionTask.From(GameSceneIsLoaded, CancellationToken.None);
+
+            // Then, wait for the game to fully load.
+            // There are better ways for us to do this, but for now we will wait until the load process
+            // lets the player interact.
+            // We may also fail to load, so watch for that.
+            var nexus = Watchman.Get<LocalNexus>();
+            await AwaitConditionTask.From(() => nexus.PlayerInputDisabled() == false || !GameSceneIsLoaded(), CancellationToken.None);
+
+            if (!GameSceneIsLoaded())
+            {
+                // This might be due to a corrupted save.
+                throw new InternalServerErrorException("Game failed to load.");
             }
         }
 
@@ -60,12 +88,12 @@ namespace SHRestAPI
             });
         }
 
-        private static Task<bool> IsGameStarted()
+        private static bool GameSceneIsLoaded()
         {
-            return Dispatcher.DispatchRead(() =>
-            {
-                return SceneManager.GetSceneByName(Constants.GameScene).isLoaded;
-            });
+            var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+            var gameScene = SceneManager.GetSceneByName(dictum.PlayfieldScene);
+            return gameScene.isLoaded;
         }
+
     }
 }

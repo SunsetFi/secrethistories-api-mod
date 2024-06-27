@@ -26,7 +26,8 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.DispatchRead(() =>
                         {
                             var stageHand = Watchman.Get<StageHand>();
-                            if (stageHand.SceneIsActive(Constants.GameScene))
+                            var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+                            if (stageHand.SceneIsActive(dictum.PlayfieldScene))
                             {
                                 var protag = Watchman.Get<Stable>().Protag();
                                 if (!protag)
@@ -68,7 +69,8 @@ namespace SHRestAPI.Controllers
                 () =>
                 {
                     var stageHand = Watchman.Get<StageHand>();
-                    if (stageHand.SceneIsActive(Constants.GameScene))
+                    var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+                    if (stageHand.SceneIsActive(dictum.PlayfieldScene))
                     {
                         var protag = Watchman.Get<Stable>().Protag();
                         if (!protag)

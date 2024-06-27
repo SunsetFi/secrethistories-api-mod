@@ -10,6 +10,7 @@ namespace SHRestAPI.Controllers
     using SHRestAPI.Server.Attributes;
     using SHRestAPI.Server.Exceptions;
 
+    // TODO: These might work in CS too, as it does have a save system.  It's just not exposed to the user.
 #if BH
 
     /// <summary>

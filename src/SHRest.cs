@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using SecretHistories.Entities;
+using SecretHistories.UI;
 using SHRestAPI;
 using SHRestAPI.JsonTranslation;
 using SHRestAPI.Server;
@@ -122,7 +124,14 @@ public class SHRest : MonoBehaviour
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.name == Constants.GameScene)
+        var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+        if (dictum == null)
+        {
+            // Game hasn't loaded yet, so obviously this cannot be the gameplay starting.
+            return;
+        }
+
+        if (scene.name == dictum.PlayfieldScene)
         {
             GameEventSource.RaiseGameStarted();
         }
@@ -130,7 +139,14 @@ public class SHRest : MonoBehaviour
 
     private void HandleSceneUnloaded(Scene scene)
     {
-        if (scene.name == Constants.GameScene)
+        var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+        if (dictum == null)
+        {
+            // Game hasn't loaded yet, so obviously this cannot be the game ending.
+            return;
+        }
+
+        if (scene.name == dictum.PlayfieldScene)
         {
             GameEventSource.RaiseGameEnded();
         }

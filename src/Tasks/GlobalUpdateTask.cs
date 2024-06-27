@@ -123,7 +123,6 @@ namespace SHRestAPI.Tasks
 
         private void OnUpdate(object sender, EventArgs e)
         {
-            Logging.LogInfo("GlobalUpdate onUpdate");
             if (this.cancellationToken.IsCancellationRequested)
             {
                 this.SetCanceled();
