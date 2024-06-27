@@ -2,8 +2,8 @@ namespace SHRestAPI.Controllers
 {
     using System.Linq;
     using System.Threading.Tasks;
+    using SecretHistories.Infrastructure;
     using SecretHistories.Infrastructure.Persistence;
-    using SecretHistories.Services;
     using SecretHistories.UI;
     using SHRestAPI.Payloads;
     using SHRestAPI.Server;
@@ -32,6 +32,36 @@ namespace SHRestAPI.Controllers
             await context.SendResponse(HttpStatusCode.OK, result);
         }
 
+        [WebRouteMethod(Method = "POST")]
+        public async Task CreateGameSave(IHttpContext context, CreateSavePayload body)
+        {
+            await Dispatcher.DispatchWrite(async () =>
+            {
+                var gameGateway = Watchman.Get<GameGateway>();
+                if (!gameGateway.GameInSaveableState())
+                {
+                    throw new ConflictException("Game is not currently in a saveable state.");
+                }
+
+                bool result;
+                if (string.IsNullOrEmpty(body.SaveName))
+                {
+                    result = await gameGateway.TryDefaultSave();
+                }
+                else
+                {
+                    result = await gameGateway.TryNamedSave(body.SaveName);
+                }
+
+                if (!result)
+                {
+                    throw new InternalServerErrorException("Failed to save game.");
+                }
+            });
+
+            await context.SendResponse(HttpStatusCode.NoContent);
+        }
+
         // TODO: POST to api/saves should create a new save.
 
         [WebRouteMethod(Method = "POST", Path = "current-save")]
@@ -39,35 +69,8 @@ namespace SHRestAPI.Controllers
         {
             body.Validate();
 
-            var awaitReady = await Dispatcher.DispatchWrite(() =>
-            {
-                // Recreation of SaveLoadPanel.LoadSelectedSave
-                var source = new NamedGamePersistenceProvider(body.SaveName);
-                source.DepersistGameState();
-                if (source.IsSaveCorrupted())
-                {
-                    throw new UnprocessableEntityException("Save file is corrupted.");
-                }
-
-                // TODO: BH explicity hides its game menu.  Do we need to do that?
-                // Won't it get unloaded when the scene does?
-                if (source.GetCharacterState() == SecretHistories.Enums.CharacterState.Extinct)
-                {
-                    Watchman.Get<StageHand>().NewGameScreen();
-                    return false;
-                }
-                else
-                {
-                    Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(source, Watchman.Get<StageHand>().GetForemostScene());
-                    return true;
-                }
-            });
-
-            if (awaitReady)
-            {
-                await Settler.AwaitGameReady();
-                await Settler.AwaitSettled();
-            }
+            var source = new NamedGamePersistenceProvider(body.SaveName);
+            await GameLoader.LoadGameFromSource(source);
 
             await context.SendResponse(HttpStatusCode.NoContent);
         }

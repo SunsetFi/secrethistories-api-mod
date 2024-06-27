@@ -46,7 +46,6 @@ namespace SHRestAPI.Tasks
         /// <inheritdoc/>
         public void Dispose()
         {
-            Logging.LogInfo("GlobalUpdate disposed");
             if (this.isDisposed)
             {
                 return;

@@ -1,5 +1,6 @@
 namespace SHRestAPI
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using SecretHistories.Entities;
@@ -18,6 +19,10 @@ namespace SHRestAPI
         /// Waits for the game to be loaded.
         /// </summary>
         /// <returns>A task that resolves when the game has fully loaded.</returns>
+        /// <remarks>
+        /// This is hugely messy, but there's no real way to track the active state of the game across scene transitions.
+        /// Detecting loading new games when a game is already ongoing is particularly tricky.
+        /// </remarks>
         public static async Task AwaitGameReady()
         {
             // Note: This may be null if we are called too soon.
@@ -31,15 +36,15 @@ namespace SHRestAPI
                 throw new ConflictException("Game has not initialized.");
             }
 
-            var gameScene = SceneManager.GetSceneByName(dictum.PlayfieldScene);
-
             // First, await the game scene.
             await AwaitConditionTask.From(GameSceneIsLoaded, CancellationToken.None);
 
-            // Then, wait for the game to fully load.
-            // There are better ways for us to do this, but for now we will wait until the load process
-            // lets the player interact.
-            // We may also fail to load, so watch for that.
+            // Then, wait for the load process to start.
+            // We can peek into this by waiting until we have a character.
+            var stable = Watchman.Get<Stable>();
+            await AwaitConditionTask.From(() => stable.Protag() != null, CancellationToken.None);
+
+            // Then, wait for the game to fully load, as indicated by the player having control.
             var nexus = Watchman.Get<LocalNexus>();
             await AwaitConditionTask.From(() => nexus.PlayerInputDisabled() == false || !GameSceneIsLoaded(), CancellationToken.None);
 
@@ -94,6 +99,5 @@ namespace SHRestAPI
             var gameScene = SceneManager.GetSceneByName(dictum.PlayfieldScene);
             return gameScene.isLoaded;
         }
-
     }
 }

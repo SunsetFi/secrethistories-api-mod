@@ -55,36 +55,7 @@ namespace SHRestAPI.Controllers
         {
             body.Validate();
 
-            var awaitReady = await Dispatcher.DispatchWrite(() =>
-            {
-                var stageHand = Watchman.Get<StageHand>();
-
-                var source = body.Provider;
-
-                if (source.IsSaveCorrupted())
-                {
-                    throw new UnprocessableEntityException("Save file is corrupted.");
-                }
-
-                stageHand.UsePersistenceProvider(source);
-
-                if (source.GetCharacterState() == CharacterState.Extinct)
-                {
-                    Watchman.Get<StageHand>().NewGameScreen();
-                    return false;
-                }
-                else
-                {
-                    Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(source, Watchman.Get<StageHand>().GetForemostScene());
-                    return true;
-                }
-            });
-
-            if (awaitReady)
-            {
-                await Settler.AwaitGameReady();
-                await Settler.AwaitSettled();
-            }
+            await GameLoader.LoadGameFromSource(body.Provider);
 
             await context.SendResponse(HttpStatusCode.NoContent);
         }
@@ -128,21 +99,8 @@ namespace SHRestAPI.Controllers
         {
             body.Validate();
 
-            await Dispatcher.DispatchWrite(() =>
-            {
-                var provider = new FreshPausedGameProvider(body.Legacy);
-                var stageHand = Watchman.Get<StageHand>();
-
-                // Switch scenes without using LoadGameOnTabletop.
-                // Bit janky, but we would need to await the fades, and LoadGameOnTabletop doesn't return a task.
-                stageHand.UsePersistenceProvider(provider);
-
-                Watchman.Get<StageHand>().LoadGameInPlayfieldWithLoadingScreen(provider, Watchman.Get<StageHand>().GetForemostScene());
-            });
-
-            await Settler.AwaitGameReady();
-
-            await Settler.AwaitSettled();
+            var provider = new FreshPausedGameProvider(body.Legacy);
+            await GameLoader.LoadGameFromSource(provider);
 
             await context.SendResponse(HttpStatusCode.NoContent);
         }

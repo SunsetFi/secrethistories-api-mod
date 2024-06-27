@@ -73,7 +73,6 @@ public class SHRest : MonoBehaviour
 
             this.RegisterControllers(ownAssembly);
 
-            SceneManager.sceneLoaded += new UnityAction<Scene, LoadSceneMode>(this.HandleSceneLoaded);
             SceneManager.sceneUnloaded += new UnityAction<Scene>(this.HandleSceneUnloaded);
         }
         catch (Exception ex)
@@ -122,21 +121,6 @@ public class SHRest : MonoBehaviour
         Logging.LogTrace($"Loaded {controllerRoutes.Length} routes from {controllerTypes.Length} controllers in {assembly.FullName}");
     }
 
-    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
-        if (dictum == null)
-        {
-            // Game hasn't loaded yet, so obviously this cannot be the gameplay starting.
-            return;
-        }
-
-        if (scene.name == dictum.PlayfieldScene)
-        {
-            GameEventSource.RaiseGameStarted();
-        }
-    }
-
     private void HandleSceneUnloaded(Scene scene)
     {
         var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
@@ -148,6 +132,7 @@ public class SHRest : MonoBehaviour
 
         if (scene.name == dictum.PlayfieldScene)
         {
+            // FIXME: This wont happen if we load a game while running another game.
             GameEventSource.RaiseGameEnded();
         }
     }
