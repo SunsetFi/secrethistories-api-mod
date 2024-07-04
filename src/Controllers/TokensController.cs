@@ -103,7 +103,8 @@ namespace SHRestAPI.Controllers
         {
             var result = await Dispatcher.DispatchRead(() =>
             {
-                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => t.PayloadId == tokenId);
+                // Tokens are inconsistent here.
+                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => this.PrefixAgnosticCompare(t.PayloadId, tokenId);
                 if (token == null)
                 {
                     throw new NotFoundException($"Token {tokenId} not found.");
@@ -139,6 +140,21 @@ namespace SHRestAPI.Controllers
             });
 
             await context.SendResponse(HttpStatusCode.OK, result);
+        }
+
+        private bool PrefixAgnosticCompare(string a, string b)
+        {
+            if (!a.StartsWith("!"))
+            {
+                a = "!" + a;
+            }
+
+            if (!b.StartsWith("!"))
+            {
+                b = "!" + b;
+            }
+
+            return a == b;
         }
     }
 }
