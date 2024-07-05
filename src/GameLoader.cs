@@ -27,8 +27,6 @@ namespace SHRestAPI
                     throw new UnprocessableEntityException("Save file is corrupted.");
                 }
 
-                // TODO: BH explicity hides its game menu.  Do we need to do that?
-                // Won't it get unloaded when the scene does?
                 if (source.GetCharacterState() == SecretHistories.Enums.CharacterState.Extinct)
                 {
                     stageHand.NewGameScreen();

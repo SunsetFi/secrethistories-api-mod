@@ -29,12 +29,14 @@ namespace SHRestAPI.Controllers
         {
             bool? isAspect = context.QueryString.ContainsKey("isAspect") ? bool.Parse(context.QueryString["isAspect"]) : null;
             bool? isHidden = context.QueryString.ContainsKey("isHidden") ? bool.Parse(context.QueryString["isHidden"]) : null;
+            string labelContains = context.QueryString["labelContains"]?.ToLower();
             var result = await Dispatcher.DispatchRead(() =>
             {
                 var elements = this.Compendium.GetEntitiesAsList<Element>();
                 return from element in elements
                        where !isAspect.HasValue || element.IsAspect == isAspect
                        where !isHidden.HasValue || element.IsHidden == isHidden
+                       where labelContains == null || element.Label.ToLower().Contains(labelContains)
                        select JsonTranslator.ObjectToJson(element);
             });
 
