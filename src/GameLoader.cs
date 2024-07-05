@@ -41,7 +41,6 @@ namespace SHRestAPI
                     stageHand.UsePersistenceProvider(source);
 
                     // SceneChangeWithLoadingScreen
-                    Logging.LogTrace($"We are unloading the formost scene, which is {stageHand.GetForemostScene().name}");
                     var unloadOp = SceneManager.UnloadSceneAsync(stageHand.GetForemostScene());
                     Traverse.Create(stageHand).Method("CleanupNonPersistentFucineObjects").GetValue();
                     Traverse.Create(stageHand).Field("_queuedSceneToLoad").SetValue(dictum.PlayfieldScene);
@@ -53,7 +52,6 @@ namespace SHRestAPI
             if (awaitReady != null)
             {
                 await awaitReady;
-                Logging.LogTrace($"Apparently the async loading is done.  Is it? loading: {SceneManager.GetSceneByName(dictum.LoadingScene).isLoaded} game: {SceneManager.GetSceneByName(dictum.PlayfieldScene).isLoaded}");
                 await Settler.AwaitGameReady();
                 await Settler.AwaitSettled();
             }
