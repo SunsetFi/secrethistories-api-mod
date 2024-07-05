@@ -14,7 +14,7 @@ namespace SHRestAPI
 
     public static class GameLoader
     {
-        public async static Task LoadGameFromSource(GamePersistenceProvider source)
+        public static async Task LoadGameFromSource(GamePersistenceProvider source)
         {
             var stageHand = Watchman.Get<StageHand>();
             var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();

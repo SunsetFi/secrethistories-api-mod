@@ -104,7 +104,7 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.DispatchRead(() =>
             {
                 // Tokens are inconsistent here.
-                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => this.PrefixAgnosticCompare(t.PayloadId, tokenId);
+                var token = TokenUtils.GetAllTokens().FirstOrDefault(t => this.PrefixAgnosticCompare(t.PayloadId, tokenId));
                 if (token == null)
                 {
                     throw new NotFoundException($"Token {tokenId} not found.");
