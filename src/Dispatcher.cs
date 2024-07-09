@@ -30,18 +30,18 @@ namespace SHRestAPI
         {
             // We somehow managed to corrupt the game state doing reads, so totally giving up on threaded reading
             // This was working fine up until we added canExecute to Situation translation, which touches and updates cached content.
-            return RunOnMainThread(function);
+            // return RunOnMainThread(function);
 
             // This is risky.  We have found a few places where global caches of objects are being used, causing reads
             // to cause list iterator invalidations.
-            // try
-            // {
-            //     return Task.FromResult(function());
-            // }
-            // catch (Exception ex)
-            // {
-            //     return Task.FromException<T>(ex);
-            // }
+            try
+            {
+                return Task.FromResult(function()).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                return Task.FromException<T>(ex).ConfigureAwait(true);
+            }
         }
 
         /// <summary>
