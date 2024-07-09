@@ -153,6 +153,7 @@ namespace SHRestAPI
             return source.Task.ContinueWith(t => (T)t.Result);
         }
 
+#if CS
         private void OnDestroy()
         {
             Logging.LogTrace($"Dispatcher destroyed by. {new StackTrace().ToString()}");
@@ -162,6 +163,7 @@ namespace SHRestAPI
         {
             Drain();
         }
+#endif
 
         private class QueuedTask
         {

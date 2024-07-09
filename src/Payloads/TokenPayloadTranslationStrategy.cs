@@ -1,6 +1,8 @@
 namespace SHRestAPI.Payloads
 {
+    using HarmonyLib;
     using SecretHistories.Abstract;
+    using SecretHistories.Entities;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
     using SHRestAPI.Server.Exceptions;
@@ -108,8 +110,23 @@ namespace SHRestAPI.Payloads
 
             token.RequestHomeLocationFromCurrentSphere();
 
+            // There's a lot of stuff that situations do automatically /some of the time/.
+            // We force it to do it here as the automatic reactions seem unreliable.
+
+            // Notify the sphere to update its contents.
+            // This is usually done automatically, but we are running into issues doing rapid slotting and when slotting into a sphere
+            // other than the open one.
+            var situation = targetSphere is ThresholdSphere ? Traverse.Create(targetSphere).Field<IHasSpheres>("_container").Value as Situation : null;
+            if (situation != null && !situation.IsOpen)
+            {
+                situation.OpenAt(situation.Token.Location);
+            }
+
             if (targetSphere is ThresholdSphere && token.Payload.Quantity > 1)
             {
+                // This is a thing that is normally done automatically but seems to not happen at random.
+                targetSphere.EvictAllTokens(new Context(Context.ActionSource.UI));
+
                 // We are targeting a threshold sphere, so only 1 can go in.
                 // We cannot return a 'new' token from this property setter, so calve off the entire stack
                 // and slot the one remaining token
@@ -121,6 +138,12 @@ namespace SHRestAPI.Payloads
             if (!targetSphere.TryAcceptToken(token, new Context(Context.ActionSource.PlayerDrag)))
             {
                 throw new BadRequestException($"The token {token.PayloadTypeName} {token.PayloadEntityId} could not be moved to sphere \"{path}\".");
+            }
+
+            if (situation != null)
+            {
+                // This is a thing that is normally done automatically but seems to not happen at random.
+                situation.UpdateRecipePrediction();
             }
         }
 

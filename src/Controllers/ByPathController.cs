@@ -59,6 +59,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path")]
         public async Task GetItemAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchRead(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -79,6 +81,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "PATCH", Path = "**path")]
         public async Task UpdateItemAtPath(IHttpContext context, string path, JObject body)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -104,6 +108,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "DELETE", Path = "**path")]
         public async Task DeleteItemAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(() =>
             {
                 this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -125,6 +131,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/icon.png")]
         public async Task GetPathIcon(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchGraphicsRead(() =>
             {
                 var sprite = this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -160,6 +168,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/spheres")]
         public async Task GetSpheresAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var items = await Dispatcher.DispatchRead(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -182,6 +192,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/tokens")]
         public async Task GetTokensAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             context.QueryString.TryGetValue("payloadType", out var payloadType);
             context.QueryString.TryGetValue("entityId", out var entityId);
 
@@ -211,6 +223,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/tokens")]
         public async Task CreateTokenAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 return this.WebSafeParse(path).WithItemAtAbsolutePath(
@@ -253,6 +267,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "DELETE", Path = "**path/tokens")]
         public async Task DeleteAllTokensAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.RunOnMainThread(() =>
             {
                 var parsed = SafeFucinePath.WebSafeParse(path);
@@ -292,6 +308,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/evict")]
         public async Task EvictItemAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(() =>
             {
                 var parsedPath = this.WebSafeParse(path);
@@ -325,6 +343,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/focus")]
         public async Task FocusItemAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(async () =>
             {
                 var token = this.WebSafeParse(path).GetToken();
@@ -349,6 +369,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/open")]
         public async Task OpenItemAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
@@ -388,6 +410,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = "**path/ambit-recipes")]
         public async Task GetAmbitRecipesAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var payload = await Dispatcher.DispatchRead(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
@@ -425,6 +449,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/recipe")]
         public async Task SetRecipeAtPath(IHttpContext context, string path, SetRecipePayload body)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
@@ -492,6 +518,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/execute")]
         public async Task ExecuteSituationAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 var token = this.WebSafeParse(path).GetToken();
@@ -605,6 +633,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/conclude")]
         public async Task ConcludeSituationAtPath(IHttpContext context, string path)
         {
+            await Settler.AwaitSettled();
+
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 var situation = this.WebSafeParse(path).GetPayload<Situation>();
@@ -644,6 +674,8 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "POST", Path = "**path/unlock")]
         public async Task UnlockTerrainAtPath(IHttpContext context, string path, MaybeInstantPayload body)
         {
+            await Settler.AwaitSettled();
+
             await Dispatcher.DispatchWrite(() =>
             {
                 var parsed = SafeFucinePath.WebSafeParse(path);
