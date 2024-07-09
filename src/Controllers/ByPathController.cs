@@ -522,35 +522,7 @@ namespace SHRestAPI.Controllers
                     };
                 }
 #if BH
-                else if (token.Payload is ConnectedTerrain terrain)
-                {
-                    var detailWindow = Watchman.Get<TerrainDetailWindow>();
-
-                    // Reimplementation of TryOpenTerrain, reimplemented so we can get the created situation and throw errors.
-                    var inputSphere = typeof(TerrainDetailWindow).GetField("inputSphere", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(detailWindow) as Sphere;
-                    if (inputSphere.IsEmpty() || terrain.IsSealed)
-                    {
-                        throw new ConflictException("Cannot unlock terrain that is sealed or has no input.");
-                    }
-
-                    inputSphere.Tokens.First().Retire(RetirementVFX.None);
-                    var terrainSphere = terrain.Token.Sphere;
-                    var infoRecipe = terrain.GetInfoRecipe();
-                    var sphereSpace = terrain.Token.Sphere.TransformWorldPositionToSphereSpace(terrain.GetPositionForUnlockToken());
-                    var unlockSituationToken = new TokenCreationCommand(
-                        new SituationCreationCommand("terrain.unlock").WithRecipeAboutToActivate(infoRecipe.Id),
-                        new TokenLocation(sphereSpace, terrainSphere)).Execute(global::Context.Unknown(), terrainSphere);
-                    detailWindow.Hide();
-
-                    var unlockSituation = unlockSituationToken.Payload as Situation;
-                    var fallbackRecipe = unlockSituation.GetFallbackRecipe();
-                    return new
-                    {
-                        executedRecipeId = fallbackRecipe.Id,
-                        executedRecipeLabel = fallbackRecipe.Label,
-                        timeRemaining = unlockSituation.TimeRemaining,
-                    };
-                }
+                // This must come before ConnectedTerrain as it is a subset of it.
                 else if (token.Payload is WisdomNodeTerrain wisdom)
                 {
                     var inputSphere = Traverse.Create(wisdom).Field<Sphere>("inputSphere").Value;
@@ -581,6 +553,35 @@ namespace SHRestAPI.Controllers
                         executedRecipeId = commitRecipe.Id,
                         executedRecipeLabel = commitRecipe.Label,
                         timeRemaining = 0.0f,
+                    };
+                }
+                else if (token.Payload is ConnectedTerrain terrain)
+                {
+                    var detailWindow = Watchman.Get<TerrainDetailWindow>();
+
+                    // Reimplementation of TryOpenTerrain, reimplemented so we can get the created situation and throw errors.
+                    var inputSphere = typeof(TerrainDetailWindow).GetField("inputSphere", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(detailWindow) as Sphere;
+                    if (inputSphere.IsEmpty() || terrain.IsSealed)
+                    {
+                        throw new ConflictException("Cannot unlock terrain that is sealed or has no input.");
+                    }
+
+                    inputSphere.Tokens.First().Retire(RetirementVFX.None);
+                    var terrainSphere = terrain.Token.Sphere;
+                    var infoRecipe = terrain.GetInfoRecipe();
+                    var sphereSpace = terrain.Token.Sphere.TransformWorldPositionToSphereSpace(terrain.GetPositionForUnlockToken());
+                    var unlockSituationToken = new TokenCreationCommand(
+                        new SituationCreationCommand("terrain.unlock").WithRecipeAboutToActivate(infoRecipe.Id),
+                        new TokenLocation(sphereSpace, terrainSphere)).Execute(global::Context.Unknown(), terrainSphere);
+                    detailWindow.Hide();
+
+                    var unlockSituation = unlockSituationToken.Payload as Situation;
+                    var fallbackRecipe = unlockSituation.GetFallbackRecipe();
+                    return new
+                    {
+                        executedRecipeId = fallbackRecipe.Id,
+                        executedRecipeLabel = fallbackRecipe.Label,
+                        timeRemaining = unlockSituation.TimeRemaining,
                     };
                 }
 #endif

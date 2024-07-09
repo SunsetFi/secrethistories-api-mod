@@ -8,6 +8,7 @@ namespace SHRestAPI.Payloads
     using SecretHistories.Commands.SituationCommands;
     using SecretHistories.Entities;
     using SecretHistories.Enums;
+    using SecretHistories.Spheres;
     using SecretHistories.States;
     using SecretHistories.UI;
     using SHRestAPI.JsonTranslation;
@@ -78,11 +79,11 @@ namespace SHRestAPI.Payloads
         [JsonPropertyGetter("thresholds")]
         public JObject[] GetThresholds(Situation situation)
         {
-            if (situation.State.Identifier == StateEnum.Ongoing)
+            if (situation.StateIdentifier == StateEnum.Ongoing)
             {
                 return situation.GetDominion(SituationDominionEnum.RecipeThresholds).Spheres.Select(x => x.GoverningSphereSpec).Select(JsonTranslator.ObjectToJson).ToArray();
             }
-            else if (situation.State.Identifier == StateEnum.Unstarted || situation.State.Identifier == StateEnum.RequiringExecution)
+            else if (situation.StateIdentifier == StateEnum.Unstarted)
             {
                 return situation.GetDominion(SituationDominionEnum.VerbThresholds).Spheres.Select(x => x.GoverningSphereSpec).Select(JsonTranslator.ObjectToJson).ToArray();
             }
@@ -90,6 +91,31 @@ namespace SHRestAPI.Payloads
             {
                 return new JObject[0];
             }
+        }
+
+        /// <summary>
+        /// Gets the current threshold content token ids of this situation by threshold sphere id.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>The threshold contents.</returns>
+        [JsonPropertyGetter("thresholdContents")]
+        public Dictionary<string, string> GetThresholdContents(Situation situation)
+        {
+            IList<Sphere> spheres;
+            if (situation.StateIdentifier == StateEnum.Ongoing)
+            {
+                spheres = situation.GetDominion(SituationDominionEnum.RecipeThresholds).Spheres;
+            }
+            else if (situation.StateIdentifier == StateEnum.Unstarted)
+            {
+                spheres = situation.GetDominion(SituationDominionEnum.VerbThresholds).Spheres;
+            }
+            else
+            {
+                return new Dictionary<string, string>();
+            }
+
+            return spheres.ToDictionary(x => x.GoverningSphereSpec.Id, x => x.Tokens.FirstOrDefault()?.PayloadId);
         }
 
 #if BH
@@ -265,6 +291,23 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
+        /// Gets whether the situation can start given its current configuration.
+        /// </summary>
+        /// <param name="situation">The situation.</param>
+        /// <returns>True if the situation can execute, or False if not cannot.</returns>
+        [JsonPropertyGetter("canExecute")]
+        public bool GetCanExecute(Situation situation)
+        {
+            if (situation.StateIdentifier != StateEnum.Unstarted)
+            {
+                return false;
+            }
+
+            var aspectsInContext = Watchman.Get<HornedAxe>().GetAspectsInContext(situation);
+            return situation.GetCurrentRecipe().Craftable && situation.GetCurrentRecipe().CanExecuteInContext(aspectsInContext);
+        }
+
+        /// <summary>
         /// Gets the situation's icon.
         /// </summary>
         /// <param name="situation">The situation.</param>
@@ -344,6 +387,9 @@ namespace SHRestAPI.Payloads
         {
             if (value)
             {
+                // Note: In book of hours, situations tend to be wildly offscreen.
+                // Sometimes, the opening situation window gets constrained to the screen,
+                // sometimes not...
                 situation.OpenAt(situation.Token.Location);
             }
             else
