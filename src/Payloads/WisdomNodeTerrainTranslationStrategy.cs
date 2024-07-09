@@ -75,11 +75,11 @@ namespace SHRestAPI.Payloads
             var inputSphere = Traverse.Create(terrain).Field<Sphere>("inputSphere").Value;
             if (committedSphere.Tokens.Any())
             {
-                aspects = Watchman.Get<HornedAxe>().GetAspectsInContext(committedSphere);
+                aspects = ThreadSafeHornedAxe.GetAspectsInContext(committedSphere);
             }
             else if (inputSphere.Tokens.Any())
             {
-                aspects = Watchman.Get<HornedAxe>().GetAspectsInContext(inputSphere);
+                aspects = ThreadSafeHornedAxe.GetAspectsInContext(inputSphere);
             }
             else
             {

@@ -1,6 +1,6 @@
 namespace SHRestAPI
 {
-    using System;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using SecretHistories.Entities;
@@ -77,7 +77,7 @@ namespace SHRestAPI
             // }
         }
 
-        private static Task<bool> IsSettled()
+        private static ConfiguredTaskAwaitable<bool> IsSettled()
         {
             // This is kinda hackish.  Autoccultist has a more involved but significantly better way of handling threading.
             return Dispatcher.DispatchRead(() =>

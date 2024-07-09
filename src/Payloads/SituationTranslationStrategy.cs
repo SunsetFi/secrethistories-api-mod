@@ -303,7 +303,9 @@ namespace SHRestAPI.Payloads
                 return false;
             }
 
-            var aspectsInContext = Watchman.Get<HornedAxe>().GetAspectsInContext(situation);
+            // FIXME: GetAspectsInContext is not thread safe!
+            // Disabling multithreaded reads for now.
+            var aspectsInContext = ThreadSafeHornedAxe.GetAspectsInContext(situation);
             return situation.GetCurrentRecipe().Craftable && situation.GetCurrentRecipe().CanExecuteInContext(aspectsInContext);
         }
 

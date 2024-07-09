@@ -2,7 +2,7 @@ namespace SHRestAPI
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using UnityEngine;
 
@@ -26,10 +26,22 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static Task<T> DispatchRead<T>(Func<T> function)
+        public static ConfiguredTaskAwaitable<T> DispatchRead<T>(Func<T> function)
         {
-            // This might be dangerous, but nothing bad seems to have happened yet.
-            return Task.FromResult(function());
+            // We somehow managed to corrupt the game state doing reads, so totally giving up on threaded reading
+            // This was working fine up until we added canExecute to Situation translation, which touches and updates cached content.
+            return RunOnMainThread(function);
+
+            // This is risky.  We have found a few places where global caches of objects are being used, causing reads
+            // to cause list iterator invalidations.
+            // try
+            // {
+            //     return Task.FromResult(function());
+            // }
+            // catch (Exception ex)
+            // {
+            //     return Task.FromException<T>(ex);
+            // }
         }
 
         /// <summary>
@@ -38,7 +50,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static Task<T> DispatchGraphicsRead<T>(Func<T> function)
+        public static ConfiguredTaskAwaitable<T> DispatchGraphicsRead<T>(Func<T> function)
         {
             return RunOnMainThread(function);
         }
@@ -49,7 +61,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static Task<T> DispatchWrite<T>(Func<T> function)
+        public static ConfiguredTaskAwaitable<T> DispatchWrite<T>(Func<T> function)
         {
             return RunOnMainThread(function);
         }
@@ -59,7 +71,7 @@ namespace SHRestAPI
         /// </summary>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The task.</returns>
-        public static Task DispatchWrite(Action function)
+        public static ConfiguredTaskAwaitable<object> DispatchWrite(Action function)
         {
             return RunOnMainThread(function);
         }
@@ -117,7 +129,7 @@ namespace SHRestAPI
         /// </summary>
         /// <param name="action">The action to run.</param>
         /// <returns>A task that completes when the action has finished.</returns>
-        public static Task RunOnMainThread(Action action)
+        public static ConfiguredTaskAwaitable<object> RunOnMainThread(Action action)
         {
             return RunOnMainThread<object>(() =>
             {
@@ -132,7 +144,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type of the function.</typeparam>
         /// <param name="function">The function to run.</param>
         /// <returns>A task that resolves to the return value of the function.</returns>
-        private static Task<T> RunOnMainThread<T>(Func<T> function)
+        private static ConfiguredTaskAwaitable<T> RunOnMainThread<T>(Func<T> function)
         {
             var source = new TaskCompletionSource<object>();
             var queueItem = new QueuedTask()
@@ -150,7 +162,7 @@ namespace SHRestAPI
             // Sigh...
             // FIXME: I think our tasks are continuing on the main thread.
             // Might need a ConfigureAwait here.
-            return source.Task.ContinueWith(t => (T)t.Result);
+            return source.Task.ContinueWith(t => (T)t.Result).ConfigureAwait(true);
         }
 
 #if CS
