@@ -44,7 +44,7 @@ namespace SHRestAPI.Payloads
         {
             // These are glued to the TerrainFeature and given through this function call.
             // InfoRecipe.Aspects is not involved.
-            return terrain.GetAspects(false);
+            return ThreadSafeHornedAxe.GetAspects(terrain);
         }
 
         /// <summary>

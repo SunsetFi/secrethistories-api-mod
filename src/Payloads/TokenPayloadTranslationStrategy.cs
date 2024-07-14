@@ -85,7 +85,6 @@ namespace SHRestAPI.Payloads
         //             return true;
         //         }
         //     }
-
         //     return false;
         // }
 

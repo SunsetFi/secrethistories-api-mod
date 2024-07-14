@@ -2,6 +2,7 @@ namespace SHRestAPI
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using HarmonyLib;
     using SecretHistories.Abstract;
     using SecretHistories.Core;
@@ -11,21 +12,25 @@ namespace SHRestAPI
 
     internal static class ThreadSafeHornedAxe
     {
+        private static readonly FieldInfo SphereAllTokens = typeof(Sphere).GetField("_allTokens", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public static AspectsInContext GetAspectsInContext(IHasElementTokens hasTokens)
         {
-            // return Watchman.Get<HornedAxe>().GetAspectsInContext(hasTokens);
-            return GetAspectsInContext(hasTokens.GetTotalAspects(true));
+            var aspects = GetTotalAspects(hasTokens, true);
+            return GetAspectsInContext(aspects);
         }
 
         public static AspectsInContext GetAspectsInContext(IHasAspects hasAspects)
         {
 
-            return GetAspectsInContext(hasAspects.GetAspects(true));
+            var aspects = GetAspects(hasAspects, true);
+            return GetAspectsInContext(aspects);
         }
 
         /// <summary>
         /// A thread safe GetAspectsInContext that does not rely on global cache dictionaries.
         /// </summary>
+        /// <param name="localAspects">The local aspects.</param>
         /// <returns>The aspects in context.</returns>
         public static AspectsInContext GetAspectsInContext(AspectsDictionary localAspects)
         {
@@ -40,7 +45,7 @@ namespace SHRestAPI
 
             foreach (var elementStack in elementStackList)
             {
-                tabletopAspects.CombineAspects(elementStack.GetAspects());
+                tabletopAspects.CombineAspects(GetAspects(elementStack));
             }
 
             var allAspectsExtant = new AspectsDictionary();
@@ -59,6 +64,68 @@ namespace SHRestAPI
             }
 
             return new AspectsInContext(localAspects, allAspectsExtant);
+        }
+
+        public static AspectsDictionary GetTotalAspects(IHasElementTokens hasElementTokens, bool includeSelf = false)
+        {
+            // GetElementTokens is not thread safe
+            if (hasElementTokens is Sphere sphere)
+            {
+                var tokens = SphereAllTokens.GetValue(sphere) as List<Token>;
+                var stacks = tokens.Select(x => x.Payload).Where(t => t is ElementStack).Cast<ElementStack>();
+
+                var fromStacks = new AspectsDictionary();
+                foreach (var stack in stacks)
+                {
+                    var aspects = GetAspects(stack, includeSelf);
+                    fromStacks.CombineAspects(aspects);
+                    fromStacks.AspectGroups.Add(aspects);
+                }
+
+                return fromStacks;
+            }
+
+            throw new System.NotImplementedException($"ThreadSafeGetTotalAspects not implemented for {hasElementTokens.GetType()}");
+        }
+
+        public static AspectsDictionary GetAspects(IHasAspects hasAspects, bool includeSelf = false)
+        {
+            if (hasAspects is ElementStack elementStack)
+            {
+                var coreAspects = new AspectsDictionary();
+                coreAspects.CombineAspects(elementStack.Element.Aspects);
+                coreAspects.ApplyMutations(elementStack.Mutations);
+                coreAspects.ApplyImmanences(elementStack.Element);
+
+                if (!includeSelf)
+                {
+                    return coreAspects;
+                }
+
+                var aspectsAndSelf = new AspectsDictionary();
+                aspectsAndSelf[elementStack.Element.Id] = elementStack.Quantity;
+                aspectsAndSelf.CombineAspects(coreAspects);
+                return aspectsAndSelf;
+            }
+            else if (hasAspects is Situation situation)
+            {
+                var aspects = new AspectsDictionary();
+                foreach (var interiorSphere in situation.GetInteriorSpheres())
+                {
+                    aspects.CombineAspects(GetTotalAspects(interiorSphere, includeSelf));
+                }
+
+                aspects.CombineAspects(situation.Verb.Aspects);
+                return aspects;
+
+            }
+            else if (hasAspects is AbstractPermanentPayload payload)
+            {
+                // This is thread safe
+                return payload.GetAspects(includeSelf);
+            }
+
+            throw new System.NotImplementedException($"ThreadSafeGetAspectsIncludingSelf not implemented for {hasAspects.GetType()}");
         }
     }
 }
