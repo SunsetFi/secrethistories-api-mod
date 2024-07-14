@@ -58,7 +58,7 @@ namespace SHRestAPI
                 {
                     if (!sphere.IsExteriorSphere)
                     {
-                        allAspectsExtant.CombineAspects(sphere.GetTotalAspects());
+                        allAspectsExtant.CombineAspects(GetTotalAspects(sphere));
                     }
                 }
             }
@@ -72,7 +72,7 @@ namespace SHRestAPI
             if (hasElementTokens is Sphere sphere)
             {
                 var tokens = SphereAllTokens.GetValue(sphere) as List<Token>;
-                var stacks = tokens.Select(x => x.Payload).Where(t => t is ElementStack).Cast<ElementStack>();
+                var stacks = tokens.Select(x => x.Payload).Where(t => t is ElementStack e && e.IsValidElementStack()).Cast<ElementStack>();
 
                 var fromStacks = new AspectsDictionary();
                 foreach (var stack in stacks)

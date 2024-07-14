@@ -2,7 +2,6 @@ namespace SHRestAPI
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using UnityEngine;
 
@@ -26,7 +25,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static ConfiguredTaskAwaitable<T> DispatchRead<T>(Func<T> function)
+        public static Task<T> DispatchRead<T>(Func<T> function)
         {
             // We somehow managed to corrupt the game state doing reads, so totally giving up on threaded reading
             // This was working fine up until we added canExecute to Situation translation, which touches and updates cached content.
@@ -36,11 +35,11 @@ namespace SHRestAPI
             // to cause list iterator invalidations.
             try
             {
-                return Task.FromResult(function()).ConfigureAwait(true);
+                return Task.FromResult(function());
             }
             catch (Exception ex)
             {
-                return Task.FromException<T>(ex).ConfigureAwait(true);
+                return Task.FromException<T>(ex);
             }
         }
 
@@ -50,7 +49,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static ConfiguredTaskAwaitable<T> DispatchGraphicsRead<T>(Func<T> function)
+        public static Task<T> DispatchGraphicsRead<T>(Func<T> function)
         {
             return RunOnMainThread(function);
         }
@@ -61,7 +60,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type.</typeparam>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The return value.</returns>
-        public static ConfiguredTaskAwaitable<T> DispatchWrite<T>(Func<T> function)
+        public static Task<T> DispatchWrite<T>(Func<T> function)
         {
             return RunOnMainThread(function);
         }
@@ -71,7 +70,7 @@ namespace SHRestAPI
         /// </summary>
         /// <param name="function">The function to dispatch.</param>
         /// <returns>The task.</returns>
-        public static ConfiguredTaskAwaitable<object> DispatchWrite(Action function)
+        public static Task<object> DispatchWrite(Action function)
         {
             return RunOnMainThread(function);
         }
@@ -129,7 +128,7 @@ namespace SHRestAPI
         /// </summary>
         /// <param name="action">The action to run.</param>
         /// <returns>A task that completes when the action has finished.</returns>
-        public static ConfiguredTaskAwaitable<object> RunOnMainThread(Action action)
+        public static Task<object> RunOnMainThread(Action action)
         {
             return RunOnMainThread<object>(() =>
             {
@@ -144,7 +143,7 @@ namespace SHRestAPI
         /// <typeparam name="T">The return type of the function.</typeparam>
         /// <param name="function">The function to run.</param>
         /// <returns>A task that resolves to the return value of the function.</returns>
-        private static ConfiguredTaskAwaitable<T> RunOnMainThread<T>(Func<T> function)
+        private static Task<T> RunOnMainThread<T>(Func<T> function)
         {
             var source = new TaskCompletionSource<object>();
             var queueItem = new QueuedTask()
@@ -162,7 +161,7 @@ namespace SHRestAPI
             // Sigh...
             // FIXME: I think our tasks are continuing on the main thread.
             // Might need a ConfigureAwait here.
-            return source.Task.ContinueWith(t => (T)t.Result).ConfigureAwait(true);
+            return source.Task.ContinueWith(t => (T)t.Result);
         }
 
 #if CS

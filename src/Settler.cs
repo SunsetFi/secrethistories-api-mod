@@ -77,7 +77,7 @@ namespace SHRestAPI
             // }
         }
 
-        private static ConfiguredTaskAwaitable<bool> IsSettled()
+        private static Task<bool> IsSettled()
         {
             // This is kinda hackish.  Autoccultist has a more involved but significantly better way of handling threading.
             return Dispatcher.DispatchRead(() =>
