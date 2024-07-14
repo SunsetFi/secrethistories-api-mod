@@ -39,10 +39,7 @@ namespace SHRestAPI
             // Leave the slash.
             path = path.Substring(1);
 
-            var parts = new List<FucinePathPart>
-            {
-                new RootPathPart(),
-            };
+            var parts = new List<SafePathPart>();
 
             var spheresScope = FucineRoot.Get().Spheres;
             while (!string.IsNullOrEmpty(path))
@@ -58,7 +55,7 @@ namespace SHRestAPI
                 this.TargetToken = null;
                 this.ContainingSphere = this.TargetSphere;
                 this.TargetSphere = sphere;
-                parts.Add(new SpherePathPart(sphere.Id));
+                parts.Add(new SafeSpherePathPart(sphere));
 
                 if (string.IsNullOrEmpty(path))
                 {
@@ -76,8 +73,10 @@ namespace SHRestAPI
                 this.ContainingSphere = sphere;
                 this.TargetToken = token;
                 spheresScope = token.Payload.GetSpheres();
-                parts.Add(new TokenPathPart(token.PayloadId));
+                parts.Add(new SafeTokenPathPart(token));
             }
+
+            this.PathParts = parts;
         }
 
         /// <summary>
@@ -98,7 +97,7 @@ namespace SHRestAPI
         /// <summary>
         /// Gets the path parts that make up this path.
         /// </summary>
-        public IReadOnlyList<FucinePathPart> PathParts { get; private set; }
+        public IReadOnlyList<SafePathPart> PathParts { get; private set; }
 
         /// <summary>
         /// Parse a fucine path, emitting web exceptions for various error conditions.
@@ -191,6 +190,28 @@ namespace SHRestAPI
             }
 
             return null;
+        }
+
+        public class SafePathPart { }
+
+        public class SafeTokenPathPart : SafePathPart
+        {
+            public SafeTokenPathPart(Token token)
+            {
+                this.Token = token;
+            }
+
+            public Token Token { get; private set; }
+        }
+
+        public class SafeSpherePathPart : SafePathPart
+        {
+            public SafeSpherePathPart(Sphere sphere)
+            {
+                this.Sphere = sphere;
+            }
+
+            public Sphere Sphere { get; private set; }
         }
 
         /// <summary>

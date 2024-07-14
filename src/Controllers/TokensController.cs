@@ -25,8 +25,6 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET")]
         public async Task GetAllTokens(IHttpContext context)
         {
-            await Settler.AwaitSettled();
-
             context.QueryString.TryGetValue("skip", out var skipStr);
             int.TryParse(skipStr, out var skip);
             context.QueryString.TryGetValue("limit", out var limitStr);
@@ -103,8 +101,6 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET", Path = ":tokenId")]
         public async Task GetTokenById(IHttpContext context, string tokenId)
         {
-            await Settler.AwaitSettled();
-
             var result = await Dispatcher.DispatchRead(() =>
             {
                 // Tokens are inconsistent here.
@@ -130,8 +126,6 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "PATCH", Path = ":tokenId")]
         public async Task UpdateToken(IHttpContext context, string tokenId, JObject body)
         {
-            await Settler.AwaitSettled();
-
             var result = await Dispatcher.DispatchWrite(() =>
             {
                 var token = TokenUtils.GetAllTokens().FirstOrDefault(t => t.PayloadId == tokenId);

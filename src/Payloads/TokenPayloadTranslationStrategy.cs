@@ -60,6 +60,36 @@ namespace SHRestAPI.Payloads
         }
 
         /// <summary>
+        /// Gets a value indicating if this token is in a shrouded sphere.
+        /// </summary>
+        /// <param name="payload">The payload.</param>
+        /// <returns>True if this token is in a shrouded sphere, or false if not.</returns>
+        [JsonPropertyGetter("inShroudedSphere")]
+        public bool GetInShroudedSphere(ITokenPayload payload)
+        {
+            return payload.GetToken().Sphere.Shrouded;
+        }
+
+        // [JsonPropertyGetter("ancestorsShrouded")]
+        // public bool GetAncestorsShrouded(ITokenPayload item)
+        // {
+        //     // TODO: This is relatively intense given the string concatenation and parsing we do
+        //     // We could in theory start digging into objects using reflection, but spheres can be in any IHasSpheres
+        //     // and there are lots of candidates those can be.  Each one would need its own code path to determine
+        //     // the parent sphere.
+        //     // Maybe check a spheres IHasSpheres parent for a ITokenPayload to get a token which is contained in a sphere?
+        //     foreach (var sphere in HierarchyScanner.GetAncestorSpheres(item.GetToken()))
+        //     {
+        //         if (sphere.Shrouded)
+        //         {
+        //             return true;
+        //         }
+        //     }
+
+        //     return false;
+        // }
+
+        /// <summary>
         /// Sets the path of the payload.GetToken().
         /// This effectively moves the ITokenPayload to the sphere.
         /// This may have side effects, and the sphere might reject the payload.GetToken().
