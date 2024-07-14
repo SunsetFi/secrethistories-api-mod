@@ -50,7 +50,7 @@ namespace SHRestAPI.Controllers
         [WebRouteMethod(Method = "GET")]
         public Task GetIndex(IHttpContext context)
         {
-            return this.SendDirectoryContent(context, SHRest.WebhostPath);
+            return this.SendDirectoryContent(context, SHRestServer.WebhostPath);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace SHRestAPI.Controllers
                 throw new NotFoundException();
             }
 
-            var webhostPath = Path.GetFullPath(SHRest.WebhostPath);
+            var webhostPath = Path.GetFullPath(SHRestServer.WebhostPath);
             if (!webhostPath.EndsWith(Path.DirectorySeparatorChar))
             {
                 webhostPath += Path.DirectorySeparatorChar;

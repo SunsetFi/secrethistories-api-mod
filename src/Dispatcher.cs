@@ -3,18 +3,13 @@ namespace SHRestAPI
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using UnityEngine;
 
     /// <summary>
     /// A dispatcher for running tasks on the main thread.
     /// </summary>
     // TODO: This is old code from stationeers webapi.  Autoccultist uses a better method using schedulers, switch to that.
-    public class Dispatcher : MonoBehaviour
+    public static class Dispatcher
     {
-#if CS
-        private static Dispatcher instance;
-#endif
-
         private static volatile bool queued = false;
         private static List<QueuedTask> backlog = new List<QueuedTask>(8);
         private static List<QueuedTask> actions = new List<QueuedTask>(8);
@@ -73,22 +68,6 @@ namespace SHRestAPI
         public static Task<object> DispatchWrite(Action function)
         {
             return RunOnMainThread(function);
-        }
-
-        /// <summary>
-        /// Initializes the dispatcher.
-        /// </summary>
-        public static void Initialize()
-        {
-            // BH deletes game objects on load, so we dispatch from Bep instead.
-#if CS
-            if (instance == null)
-            {
-
-                instance = new GameObject("Dispatcher").AddComponent<Dispatcher>();
-                DontDestroyOnLoad(instance.gameObject);
-            }
-#endif
         }
 
         /// <summary>
@@ -163,18 +142,6 @@ namespace SHRestAPI
             // Might need a ConfigureAwait here.
             return source.Task.ContinueWith(t => (T)t.Result);
         }
-
-#if CS
-        private void OnDestroy()
-        {
-            Logging.LogTrace($"Dispatcher destroyed by. {new StackTrace().ToString()}");
-        }
-
-        private void Update()
-        {
-            Drain();
-        }
-#endif
 
         private class QueuedTask
         {
