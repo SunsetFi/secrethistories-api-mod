@@ -49,3 +49,9 @@ I tried really hard to get WebSockets working in this thing, but Unity/Mono does
 Should either write our own http server (not as hard as it sounds, but time consuming), or run a crippled third party websocket server on a different port.
 
 For now, using long polling.
+
+## License
+
+<img src="/sixthhistory.svg" align="left" width="150" height="150">
+
+Hush House Catalogue is an independent work by SunsetFi and is not affiliated with Weather Factory Ltd, Secret Histories or any related official content. It is published under Weather Factory’s Sixth History Community Licence.
