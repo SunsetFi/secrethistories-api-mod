@@ -102,6 +102,12 @@ namespace SHRestAPI.Payloads
             return sphere.GoverningSphereSpec?.Greedy ?? false;
         }
 
+        [JsonPropertyGetter("exterior")]
+        public bool GetExterior(Sphere sphere)
+        {
+            return sphere.IsExteriorSphere;
+        }
+
         /// <summary>
         /// Gets the attributes that all must be present on a token to be inserted into this sphere.
         /// </summary>
