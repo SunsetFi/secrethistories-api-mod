@@ -1,5 +1,6 @@
 namespace SHRestAPI
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
@@ -34,36 +35,46 @@ namespace SHRestAPI
         /// <returns>The aspects in context.</returns>
         public static AspectsInContext GetAspectsInContext(AspectsDictionary localAspects)
         {
-            var hornedAxe = Watchman.Get<HornedAxe>();
-            var hornedAxeTraverse = Traverse.Create(hornedAxe);
-
-            var tabletopAspects = new AspectsDictionary();
-
-            var elementStackList = hornedAxeTraverse.Field<HashSet<Sphere>>("_registeredSpheres")
-                .Value.Where(tc => tc.IsExteriorSphere)
-                .SelectMany(sphere => sphere.GetElementStacks().Where(s => s.IsValidElementStack()));
-
-            foreach (var elementStack in elementStackList)
+            try
             {
-                tabletopAspects.CombineAspects(GetAspects(elementStack));
-            }
+                var hornedAxe = Watchman.Get<HornedAxe>();
+                var hornedAxeTraverse = Traverse.Create(hornedAxe);
 
-            var allAspectsExtant = new AspectsDictionary();
-            allAspectsExtant.CombineAspects(tabletopAspects);
-            foreach (var situation in hornedAxe.GetRegisteredSituations())
-            {
-                allAspectsExtant.CombineAspects(situation.Verb.Aspects);
-                allAspectsExtant.CombineAspects(situation.GetCurrentRecipe().Aspects);
-                foreach (var sphere in situation.GetSpheres())
+                var tabletopAspects = new AspectsDictionary();
+
+                var elementStackList = hornedAxeTraverse.Field<HashSet<Sphere>>("_registeredSpheres")
+                    .Value.Where(tc => tc.IsExteriorSphere)
+                    .SelectMany(sphere => sphere.GetElementStacks().Where(s => s.IsValidElementStack()));
+
+                foreach (var elementStack in elementStackList)
                 {
-                    if (!sphere.IsExteriorSphere)
+                    tabletopAspects.CombineAspects(GetAspects(elementStack));
+                }
+
+                var allAspectsExtant = new AspectsDictionary();
+                allAspectsExtant.CombineAspects(tabletopAspects);
+                foreach (var situation in hornedAxe.GetRegisteredSituations())
+                {
+                    allAspectsExtant.CombineAspects(situation.Verb.Aspects);
+                    allAspectsExtant.CombineAspects(situation.GetCurrentRecipe().Aspects);
+                    foreach (var sphere in situation.GetSpheres())
                     {
-                        allAspectsExtant.CombineAspects(GetTotalAspects(sphere));
+                        if (!sphere.IsExteriorSphere)
+                        {
+                            allAspectsExtant.CombineAspects(GetTotalAspects(sphere));
+                        }
                     }
                 }
-            }
 
-            return new AspectsInContext(localAspects, allAspectsExtant);
+                return new AspectsInContext(localAspects, allAspectsExtant);
+            }
+            catch (InvalidOperationException)
+            {
+                Logging.LogTrace("ThreadSafeHornedAxe.GetAspectsInContext: InvalidOperationException occurred.  Assuming we hit a threading collision; returning no aspects.");
+                // This code runs on a background thread, and aspects may be updated by the game's main thread.
+                // This will cause our traversal to fail, so we catch the exception and return an empty AspectsInContext.
+                return new AspectsInContext(new AspectsDictionary(), new AspectsDictionary());
+            }
         }
 
         public static AspectsDictionary GetTotalAspects(IHasElementTokens hasElementTokens, bool includeSelf = false)

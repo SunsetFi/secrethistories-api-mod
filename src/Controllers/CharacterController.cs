@@ -1,5 +1,6 @@
 namespace SHRestAPI.Controllers
 {
+    using System;
     using System.Linq;
     using System.Threading.Tasks;
     using SecretHistories.Entities;
@@ -26,7 +27,14 @@ namespace SHRestAPI.Controllers
             var result = await Dispatcher.DispatchRead(() =>
                         {
                             var stageHand = Watchman.Get<StageHand>();
-                            var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+                            var compendium = Watchman.Get<Compendium>();
+                            if (compendium == null)
+                            {
+                                // Happens when the game is loading
+                                return null;
+                            }
+
+                            var dictum = compendium.GetSingleEntity<Dictum>();
                             if (stageHand.SceneIsActive(dictum.PlayfieldScene))
                             {
                                 var protag = Watchman.Get<Stable>().Protag();
