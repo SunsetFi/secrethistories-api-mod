@@ -44,7 +44,15 @@ namespace SHRestAPI
 
         private void HandleSceneUnloaded(Scene scene)
         {
-            var dictum = Watchman.Get<Compendium>().GetSingleEntity<Dictum>();
+            // There's a null crash somewhere in here with GOG.  Maybe the compendium isn't initialized when the first scene unloads?
+            // Perhaps there's some sort of other splash screen?>
+            var compendium = Watchman.Get<Compendium>();
+            if (compendium == null)
+            {
+                return;
+            }
+
+            var dictum = compendium.GetSingleEntity<Dictum>();
             if (dictum == null)
             {
                 // Game hasn't loaded yet, so obviously this cannot be the game ending.
