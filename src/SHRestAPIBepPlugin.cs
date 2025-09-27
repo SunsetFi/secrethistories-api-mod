@@ -21,7 +21,7 @@ namespace SHRestAPI
         /// </summary>
         private void Awake()
         {
-            this.Logger.LogInfo("Secret Histories RESTAPI BepnEx plugin loaded.");
+            this.Logger.LogInfo("Secret Histories RESTAPI BepInEx plugin loaded.");
             PublicLogger = this.Logger;
 
             SceneManager.sceneUnloaded += new UnityAction<Scene>(this.HandleSceneUnloaded);
