@@ -23,6 +23,14 @@ public static class SHRestServer
     /// </summary>
     private static WebServer webServer;
 
+    public static string ConfigPath
+    {
+        get
+        {
+            return Path.Combine(Path.GetDirectoryName(typeof(SHRest).Assembly.Location), "config.json");
+        }
+    }
+
     /// <summary>
     /// Gets the path to the web host content.
     /// </summary>
@@ -42,6 +50,8 @@ public static class SHRestServer
         Logging.LogInfo("SHRestServer Initializing.");
         try
         {
+            Config.LoadConfig();
+
             var ownAssembly = typeof(SHRest).Assembly;
             JsonTranslator.LoadJsonTranslatorStrategies(ownAssembly);
 
@@ -55,7 +65,7 @@ public static class SHRestServer
 
         try
         {
-            StartServer();
+            StartServer(Config.Instance.Port);
         }
         catch (Exception ex)
         {
@@ -85,7 +95,7 @@ public static class SHRestServer
         Logging.LogTrace($"Loaded {controllerRoutes.Length} routes from {controllerTypes.Length} controllers in {assembly.FullName}");
     }
 
-    private static void StartServer()
+    private static void StartServer(int port)
     {
         if (webServer != null)
         {
@@ -93,7 +103,7 @@ public static class SHRestServer
         }
 
         webServer = new WebServer(OnRequest);
-        webServer.Start(8081);
+        webServer.Start(port);
     }
 
     private static async Task<bool> OnRequest(IHttpContext context)
